@@ -6,6 +6,12 @@ import speech_recognition as sr
 import time
 import re
 
+from justhink_world import create_world, load_log, show_world
+from justhink_world.agent import Human, Robot
+from justhink_world.domain.action import Action, PickAction, ClearAction, \
+AttemptSubmitAction, ContinueAction, SubmitAction, AgreeAction, DisagreeAction
+
+
 class IntentionPublisher(Node):
 
     def __init__(self):
@@ -13,11 +19,23 @@ class IntentionPublisher(Node):
         print("Now we start!")
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
+        # # initialize the activity
+        # # Create a world.
+        # world = create_world('collaboration-1')
+        # # Visualise the world on the current screen.
+        # show_world(world, screen_index=0)
+        
+        # if "Action(agree,Robot)" in str(world.agent.all_actions) \
+        #         or "Action(agree,Human)" in str(world.agent.all_actions)\
+        #         or "Action(disagree,Robot)" in str(world.agent.all_actions)\
+        #         or "Action(disagree,Human)" in str(world.agent.all_actions):
+        #     self.publisher_ = self.create_publisher(String, 'intention', 3)
+        #     self.detection_callback()
 
         while(True):
-            self.publisher_ = self.create_publisher(String, 'intention', 3)
-            self.detection_callback()
-            time.sleep(3)
+           self.publisher_ = self.create_publisher(String, 'intention', 3)
+           self.detection_callback()
+           time.sleep(3)
 
     def detection_callback(self):
         msg = String()
@@ -70,9 +88,11 @@ class IntentionPublisher(Node):
                 #print("User wants to {} ".format(intention))
             elif intention_dic["agree"]:
                 intention = "agree"
+                #world.act(AgreeAction(agent=Human))
                 #print("User wants to {} ".format(intention))
             elif intention_dic["disagree"]:
                 intention = "disagree"
+                #world.act(DisagreeAction(agent=Human))
                 #print("User wants to {} ".format(intention))
             else:
                 print("Error: intention detection failed.")
@@ -88,11 +108,11 @@ class IntentionPublisher(Node):
         Defalut value -  all False
         """
     
-        keywords_connect = ['connect','kinect','go','from','build','bridge','add','another','walk','building','going','put','route']
-        keywords_clearall = ['clear','delete','remove','clean','erase','empty']
+        keywords_connect = ['connect','kinect','go','from','build','bridge','add','another','walk','building','going','put','route','train']
+        keywords_clearall = ['clear','delete','remove','clean','erase','empty','cancel']
         keywords_submit = ['submit','done','end','finish','terminate']
-        keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine']
-        keywords_disagree = ['no','not',"don",'disagree']
+        keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine','sure']
+        keywords_disagree = ['no','not',"don",'disagree','stupid','waste','wasting']
     
         # set up the response object
         intention_dic = {
