@@ -1,45 +1,41 @@
 import rclpy
 import pyglet
-import re
 from rclpy.node import Node
 
 from std_msgs.msg import String
-from justhink_world import create_world, load_log, show_world, world
-from justhink_world.agent import Human, Robot
-from justhink_world.domain.action import PickAction, ClearAction, \
-AttemptSubmitAction, ContinueAction, SubmitAction, AgreeAction, DisagreeAction
-from justhink_world.visual import WorldWindow
+# from justhink_world import create_world, load_log, show_world
+# from justhink_world.agent import Human, Robot
+# from justhink_world.domain.action import PickAction, ClearAction, \
+# AttemptSubmitAction, ContinueAction, SubmitAction, AgreeAction, DisagreeAction
+# from justhink_world.visual import WorldWindow
 
 class IntentionSubscriber(Node):
 
     def __init__(self):
-        # Call back to detect user's intention
-        super().__init__('intention_subscriber')
-
+        # initialize the activity
         # Create a world.
-        self.world = create_world('collaboration-1')
-        print("initialized world")
-        self.win = WorldWindow(self.world, state_no=None, screen_index=-1)
-        print("world window intitialized")
+        # world = create_world('collaboration-1')
         self.instuction_msg = ""
 
-        # Start intention detection
+        super().__init__('intention_subscriber')
         self.subscription = self.create_subscription(
             String,
             'intention',
             self.listener_callback,
-            10)
-        print("start recognition")
+            100)
         self.subscription  # prevent unused variable warning
-        print("recognition finish")
+
+
+        # # Show world
+        # win = WorldWindow(world, state_no=None, screen_index=-1)
         # # Override the updater for next label.
         # def _update_next_label():
         #     pass
         # win._update_next_label = _update_next_label
         # # Change the text e.g. in a callback.
         # win.graphics.next_label.text = self.instruction_msg
-        # Enter the main event loop.
-        pyglet.app.run()
+        # # Enter the main event loop.
+        # pyglet.app.run()
 
 
     def listener_callback(self, msg):       
@@ -53,8 +49,6 @@ class IntentionSubscriber(Node):
 
             intention_dic = self.keyword_detection(msg.data)
             intention = ""
-            current_agent = self.world.agent
-
             if intention_dic["connect"]:
                 intention = "connect"
                 #print("User wants to {} ".format(intention))
@@ -66,17 +60,16 @@ class IntentionSubscriber(Node):
                 #print("User wants to {} ".format(intention))
             elif intention_dic["agree"]:
                 intention = "agree"
-                self.win.execute_action(AgreeAction(agent=current_agent))
-                # self.instuction_msg = "User wants to {} ".format(intention)
+                #world.act(AgreeAction(agent=Human))
+                #print("User wants to {} ".format(intention))
             elif intention_dic["disagree"]:
                 intention = "disagree"
-                self.win.execute_action(DisagreeAction(agent=current_agent))
-                # self.instuction_msg = "User wants to {} ".format(intention)
+                #world.act(DisagreeAction(agent=Human))
+                #print("User wants to {} ".format(intention))
             else:
                 print("Error: intention detection failed.")
 
-            self.instuction_msg = "User wants to {} ".format(intention)
-            # self.get_logger().info('User wants to: "%s"' % intention)
+            self.get_logger().info('User wants to: "%s"' % intention)
             # return intention
 
 
@@ -90,10 +83,10 @@ class IntentionSubscriber(Node):
         Defalut value -  all False
         """
     
-        keywords_connect = ['connect','kinect','go','from','build','bridge','add','another','walk','building','going','put','route','train','bridges']
+        keywords_connect = ['connect','kinect','go','from','build','bridge','add','another','walk','building','going','put','route','train']
         keywords_clearall = ['clear','delete','remove','clean','erase','empty','cancel','disconnect']
         keywords_submit = ['submit','done','end','finish','terminate']
-        keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine','sure','nevermind']
+        keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine','sure']
         keywords_disagree = ['no','not',"don",'disagree','stupid','waste','wasting']
     
         # set up the response object

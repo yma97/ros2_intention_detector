@@ -1,0 +1,23 @@
+running egg_info
+writing build/ros2_intention_detector/ros2_intention_detector.egg-info/PKG-INFO
+writing dependency_links to build/ros2_intention_detector/ros2_intention_detector.egg-info/dependency_links.txt
+writing entry points to build/ros2_intention_detector/ros2_intention_detector.egg-info/entry_points.txt
+writing requirements to build/ros2_intention_detector/ros2_intention_detector.egg-info/requires.txt
+writing top-level names to build/ros2_intention_detector/ros2_intention_detector.egg-info/top_level.txt
+reading manifest file 'build/ros2_intention_detector/ros2_intention_detector.egg-info/SOURCES.txt'
+writing manifest file 'build/ros2_intention_detector/ros2_intention_detector.egg-info/SOURCES.txt'
+running build
+running build_py
+copying ros2_intention_detector/intention_detector_function.py -> /home/wintermelon/dev_ws/src/ros2_intention_detector/build/ros2_intention_detector/build/lib/ros2_intention_detector
+running install
+running install_lib
+copying /home/wintermelon/dev_ws/src/ros2_intention_detector/build/ros2_intention_detector/build/lib/ros2_intention_detector/intention_detector_function.py -> /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages/ros2_intention_detector
+byte-compiling /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages/ros2_intention_detector/intention_detector_function.py to intention_detector_function.cpython-38.pyc
+running install_data
+running install_egg_info
+removing '/home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages/ros2_intention_detector-0.0.0-py3.8.egg-info' (and everything under it)
+Copying build/ros2_intention_detector/ros2_intention_detector.egg-info to /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages/ros2_intention_detector-0.0.0-py3.8.egg-info
+running install_scripts
+Installing detector script to /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/ros2_intention_detector
+Installing listener script to /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/ros2_intention_detector
+writing list of installed files to '/home/wintermelon/dev_ws/src/ros2_intention_detector/build/ros2_intention_detector/install.log'

@@ -1,0 +1,5 @@
+  File "/home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages/ros2_intention_detector/intention_subscriber_function.py", line 31
+    Excute the action in the activity
+           ^
+SyntaxError: invalid syntax
+

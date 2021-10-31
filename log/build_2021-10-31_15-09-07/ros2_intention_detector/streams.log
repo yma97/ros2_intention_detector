@@ -1,0 +1,33 @@
+[0.218s] Invoking command in '/home/wintermelon/dev_ws/src/ros2_intention_detector': PYTHONPATH=/home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base build/ros2_intention_detector build --build-base /home/wintermelon/dev_ws/src/ros2_intention_detector/build/ros2_intention_detector/build install --prefix /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector --record /home/wintermelon/dev_ws/src/ros2_intention_detector/build/ros2_intention_detector/install.log --single-version-externally-managed
+[0.403s] running egg_info
+[0.404s] writing build/ros2_intention_detector/ros2_intention_detector.egg-info/PKG-INFO
+[0.404s] writing dependency_links to build/ros2_intention_detector/ros2_intention_detector.egg-info/dependency_links.txt
+[0.404s] writing entry points to build/ros2_intention_detector/ros2_intention_detector.egg-info/entry_points.txt
+[0.404s] writing requirements to build/ros2_intention_detector/ros2_intention_detector.egg-info/requires.txt
+[0.404s] writing top-level names to build/ros2_intention_detector/ros2_intention_detector.egg-info/top_level.txt
+[0.435s] reading manifest file 'build/ros2_intention_detector/ros2_intention_detector.egg-info/SOURCES.txt'
+[0.436s] writing manifest file 'build/ros2_intention_detector/ros2_intention_detector.egg-info/SOURCES.txt'
+[0.436s] running build
+[0.436s] running build_py
+[0.436s] copying ros2_intention_detector/intention_detector_function.py -> /home/wintermelon/dev_ws/src/ros2_intention_detector/build/ros2_intention_detector/build/lib/ros2_intention_detector
+[0.436s] copying ros2_intention_detector/intention_subscriber_function.py -> /home/wintermelon/dev_ws/src/ros2_intention_detector/build/ros2_intention_detector/build/lib/ros2_intention_detector
+[0.436s] running install
+[0.437s] running install_lib
+[0.438s] copying /home/wintermelon/dev_ws/src/ros2_intention_detector/build/ros2_intention_detector/build/lib/ros2_intention_detector/intention_detector_function.py -> /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages/ros2_intention_detector
+[0.439s] copying /home/wintermelon/dev_ws/src/ros2_intention_detector/build/ros2_intention_detector/build/lib/ros2_intention_detector/intention_subscriber_function.py -> /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages/ros2_intention_detector
+[0.439s] byte-compiling /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages/ros2_intention_detector/intention_detector_function.py to intention_detector_function.cpython-38.pyc
+[0.441s] byte-compiling /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages/ros2_intention_detector/intention_subscriber_function.py to intention_subscriber_function.cpython-38.pyc
+[0.441s]   File "/home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages/ros2_intention_detector/intention_subscriber_function.py", line 31
+[0.441s]     Excute the action in the activity
+[0.441s]            ^
+[0.441s] SyntaxError: invalid syntax
+[0.442s] 
+[0.442s] running install_data
+[0.442s] running install_egg_info
+[0.443s] removing '/home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages/ros2_intention_detector-0.0.0-py3.8.egg-info' (and everything under it)
+[0.443s] Copying build/ros2_intention_detector/ros2_intention_detector.egg-info to /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages/ros2_intention_detector-0.0.0-py3.8.egg-info
+[0.444s] running install_scripts
+[0.458s] Installing detector script to /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/ros2_intention_detector
+[0.459s] Installing listener script to /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/ros2_intention_detector
+[0.459s] writing list of installed files to '/home/wintermelon/dev_ws/src/ros2_intention_detector/build/ros2_intention_detector/install.log'
+[0.475s] Invoked command in '/home/wintermelon/dev_ws/src/ros2_intention_detector' returned '0': PYTHONPATH=/home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base build/ros2_intention_detector build --build-base /home/wintermelon/dev_ws/src/ros2_intention_detector/build/ros2_intention_detector/build install --prefix /home/wintermelon/dev_ws/src/ros2_intention_detector/install/ros2_intention_detector --record /home/wintermelon/dev_ws/src/ros2_intention_detector/build/ros2_intention_detector/install.log --single-version-externally-managed
