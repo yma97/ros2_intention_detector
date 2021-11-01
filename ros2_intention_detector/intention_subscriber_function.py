@@ -52,7 +52,7 @@ class IntentionSubscriber(Node):
 
             intention_dic = self.keyword_detection(msg.data)
             intention = ""
-            current_agent = Robot  #self.world.agent
+            #current_agent = Human  #self.world.agent
 
             if intention_dic["connect"]:
                 intention = "connect"
@@ -65,11 +65,17 @@ class IntentionSubscriber(Node):
                 #print("User wants to {} ".format(intention))
             elif intention_dic["agree"]:
                 intention = "agree"
-                self.win.execute_action(AgreeAction(agent=current_agent))
+                if AgreeAction(agent=Human) in self.world.agent.all_actions:
+                    self.win.execute_action(AgreeAction(agent=Human))
+                else:
+                    self.win.execute_action(AgreeAction(agent=Robot))
                 # self.instuction_msg = "User wants to {} ".format(intention)
             elif intention_dic["disagree"]:
                 intention = "disagree"
-                self.win.execute_action(DisagreeAction(agent=current_agent))
+                if DisagreeAction(agent=Human) in self.world.agent.all_actions:
+                    self.win.execute_action(DisagreeAction(agent=Human))
+                else:
+                    self.win.execute_action(DisagreeAction(agent=Robot))
                 # self.instuction_msg = "User wants to {} ".format(intention)
             else:
                 print("Error: intention detection failed.")
