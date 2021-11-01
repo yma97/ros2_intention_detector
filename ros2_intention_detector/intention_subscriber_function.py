@@ -20,7 +20,7 @@ class IntentionSubscriber(Node):
         self.world = create_world('collaboration-1')
         print("initialized world")
         self.win = WorldWindow(self.world, state_no=None, screen_index=-1)
-        print("world window intitialized")
+        print("world window intitialized 2")
         self.instuction_msg = ""
 
         # Start intention detection
@@ -38,22 +38,21 @@ class IntentionSubscriber(Node):
         # win._update_next_label = _update_next_label
         # # Change the text e.g. in a callback.
         # win.graphics.next_label.text = self.instruction_msg
-        # Enter the main event loop.
-        pyglet.app.run()
 
 
-    def listener_callback(self, msg):       
+    def listener_callback(self, msg):  
+        self.get_logger().info('I heard: "%s"' % msg.data)
         # Excute the action in the activity
         # if msg.data == agree:
         #     world.act(AgreeAction(agent=Human))
         # elif msg.data == disagree:
         #     world.act(DisagreeAction(agent=Human))
-    
+        
         if not msg.data == "error":
 
             intention_dic = self.keyword_detection(msg.data)
             intention = ""
-            current_agent = self.world.agent
+            current_agent = Robot  #self.world.agent
 
             if intention_dic["connect"]:
                 intention = "connect"
@@ -125,7 +124,22 @@ class IntentionSubscriber(Node):
 def main(args=None):
     rclpy.init(args=args)
     intention_subscriber = IntentionSubscriber()
-    rclpy.spin(intention_subscriber)
+    # rclpy.spin(intention_subscriber)
+
+    # pyglet.app.run()
+    
+    # Enter the main event loop.
+    while True:
+        pyglet.clock.tick()
+
+        for window in pyglet.app.windows:
+            window.switch_to()
+            window.dispatch_events()
+            window.dispatch_event('on_draw')
+            window.flip()
+
+        rclpy.spin_once(intention_subscriber, timeout_sec=0.0)
+
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically

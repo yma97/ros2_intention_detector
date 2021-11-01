@@ -1,4 +1,0 @@
-[console_scripts]
-detector = ros2_intention_detector.intention_detector_function:main
-listener = ros2_intention_detector.intention_subscriber_function:main
-
