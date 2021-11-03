@@ -1,3 +1,4 @@
+from justhink_world import agent
 import rclpy
 import pyglet
 import re
@@ -6,7 +7,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from justhink_world import create_world, load_log, show_world, world
 from justhink_world.agent import Human, Robot
-from justhink_world.domain.action import SuggestPickAction, ClearAction, \
+from justhink_world.domain.action import SubmitAction, SuggestPickAction, ClearAction, \
 AttemptSubmitAction, ContinueAction, AttemptSubmitAction, AgreeAction, DisagreeAction
 from justhink_world.visual import WorldWindow
 
@@ -16,12 +17,14 @@ class IntentionSubscriber(Node):
         # Call back to detect user's intention
         super().__init__('intention_subscriber')
 
-        # Create a world.
+        # Create a world & initialization global values
         self.world = create_world('collaboration-1')
         print("initialized world")
         self.win = WorldWindow(self.world, state_no=None, screen_index=-1)
         print("world window intitialized 2")
         self.instruction_msg = "Heyy, tell me what you want to do!"
+        self.followup = False
+        self.intention = ""
 
         # Start intention detection
         self.subscription = self.create_subscription(
@@ -46,20 +49,27 @@ class IntentionSubscriber(Node):
         #self.instruction_msg = 'I heard: "%s"' % msg.data
         #self.win.graphics.next_label.text = self.instruction_msg
         
-        if not msg.data == "error":
+        wordList = re.sub("[^\w]"," ", msg.data).split()
+        print(wordList)
 
-            wordList = re.sub("[^\w]"," ", msg.data).split()
-            print(wordList)
+        if not msg.data == "error" and not self.followup:
+            self.action_detection(wordList)
+        
+        elif not msg.data == "error" and self.followup:
+            self.followup_detection(wordList)
+
+
+    def action_detection(self, wordList):
+            
             intention_dic = self.keyword_detection(wordList)
-            intention = ""
-            #current_agent = Human  #self.world.agent
 
             if intention_dic["connect"]:
-                intention = "connect"
+                self.intention = "connect"
                 print("You want to connect")
                 self.connect_location(wordList)
+            
             elif intention_dic["clearall"]:
-                intention = "clear all"
+                self.intention = "clear all"
                 self.instruction_msg = "Okay, we clear all"
                 self.win.graphics.next_label.text = self.instruction_msg
 
@@ -72,8 +82,8 @@ class IntentionSubscriber(Node):
                     # self.win.graphics.next_label.text = self.instruction_msg
 
             elif intention_dic["submit"]:
-                intention = "submit"
-                self.instruction_msg = "Okay we submit"
+                self.intention = "submit"
+                self.instruction_msg = "Are you sure that you want to submit?"
                 self.win.graphics.next_label.text = self.instruction_msg   
 
                 if AttemptSubmitAction(agent=Human) in self.world.agent.all_actions:
@@ -83,9 +93,10 @@ class IntentionSubscriber(Node):
                     # print("You are a Robot. You can't submit!")
                     # self.instruction_msg = "You are a Robot. You can't submit!"
                     # self.win.graphics.next_label.text = self.instruction_msg  
+                self.followup = True
 
             elif intention_dic["agree"]:
-                intention = "agree"
+                self.intention = "agree"
   
                 self.instruction_msg = "Thanks for agree.Tell me what you want to do now?"
                 self.win.graphics.next_label.text = self.instruction_msg     
@@ -97,7 +108,7 @@ class IntentionSubscriber(Node):
                 
 
             elif intention_dic["disagree"]:
-                intention = "disagree"
+                self.intention = "disagree"
 
                 self.instruction_msg = "You disagree. Then tell me what you want to do?"
                 self.win.graphics.next_label.text = self.instruction_msg
@@ -106,18 +117,55 @@ class IntentionSubscriber(Node):
                     self.win.execute_action(DisagreeAction(agent=Human))
                 else:
                     self.win.execute_action(DisagreeAction(agent=Robot))
+            
+            elif intention_dic["stupid"]:
+                self.intention = "disagree"
+
+                self.instruction_msg = "Thank you. You too ^^"
+                self.win.graphics.next_label.text = self.instruction_msg
+
+                if DisagreeAction(agent=Human) in self.world.agent.all_actions:
+                    self.win.execute_action(DisagreeAction(agent=Human))
+                else:
+                    self.win.execute_action(DisagreeAction(agent=Robot))                      
 
             else:
                 print("Error: intention detection failed.")
-                self.instruction_msg = "Error: intention detection failed."
+                self.instruction_msg = "Error: intention detection failed: {}".format(wordList)
                 self.win.graphics.next_label.text = self.instruction_msg
 
-            # self.instuction_msg = "User wants to {} ".format(intention)
-            # self.get_logger().info('User wants to: "%s"' % intention)
-            # return intention
+     
+    
+    def followup_detection(self, wordList):
+        
+        intention_dic = self.keyword_detection(wordList)
+
+        if self.intention == "submit":
+            if intention_dic["agree"]:
+                self.instruction_msg = "Okay we submit!"
+                self.win.graphics.next_label.text = self.instruction_msg     
+
+                if SubmitAction(agent=Human) in self.world.agent.all_actions:
+                    self.win.execute_action(SubmitAction(agent=Human))
+                else:
+                    print("Error: Submition failed")
+                    self.instruction_msg = "Error: Submition failed"
+                    self.win.graphics.next_label.text = self.instruction_msg  
+            elif intention_dic["disagree"] or intention_dic['clearall']:
+                self.instruction_msg = "You canceled your submition!"
+                self.win.graphics.next_label.text = self.instruction_msg     
+
+                if ContinueAction(agent=Human) in self.world.agent.all_actions:
+                    self.win.execute_action(ContinueAction(agent=Human))
+                else:
+                    print("Error: Cancellation failed")
+                    self.instruction_msg = "Error: Cancellation failed"
+                    self.win.graphics.next_label.text = self.instruction_msg  
+
+            self.followup = False
 
 
-   
+
     def keyword_detection(self,wordList):
         """Detect user's intention when speech recognition succeeds.
         Compare the words in the transcript with teh keywords set.
@@ -129,18 +177,20 @@ class IntentionSubscriber(Node):
     
         keywords_connect = ['connect','kinect','go','from','build','bridge','add','another','walk','building','going','put','route','train','bridges']
         keywords_clearall = ['clear','delete','remove','clean','erase','empty','cancel','disconnect']
-        keywords_submit = ['submit','done','end','finish','terminate']
+        keywords_submit = ['submit','done','end','finish','terminate','finished']
         keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine','sure','nevermind']
-        keywords_disagree = ['no','not',"don",'disagree','stupid','waste','wasting']
-        
+        keywords_disagree = ['no','not',"don",'disagree','waste','wasting']
+        keywords_badwords = ['stupid']
+
         # set up the response object
         intention_dic = {
             "connect": False,
             "clearall": False,
             "submit": False,
             "agree": False,
-            "disagree": False
-        }
+            "disagree": False,
+            "stupid": False
+        }        
     
         # set the corresponding intention to true if detected
         if any([keyw in wordList for keyw in keywords_clearall]):
@@ -153,7 +203,9 @@ class IntentionSubscriber(Node):
             intention_dic["agree"] = True
         elif any([keyw in wordList for keyw in keywords_connect]):
             intention_dic["connect"] = True 
-    
+        elif any([keyw in wordList for keyw in keywords_badwords]):
+            intention_dic["stupid"] = True
+
         return intention_dic
 
 
@@ -179,7 +231,7 @@ class IntentionSubscriber(Node):
                 break
         
         if loc_1 == "" or loc_2 == "": 
-            self.instruction_msg = "Invalid locations"
+            self.instruction_msg = "Invalid locations: {}".format(wordList)
             self.win.graphics.next_label.text = self.instruction_msg
         else:
             self.instruction_msg = "You connect Mount {} and Mount {}".format(loc_1, loc_2)
