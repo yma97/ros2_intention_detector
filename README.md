@@ -1,5 +1,6 @@
 # ros2_intention_detector
 JUST_THINK Optional Semester Project
+Help Interaction between the world and the children. Using Speech recognition to detect user's intention.
 
 cd ros2_foxy/src/
 . ../ros2-linux/setup.bash
