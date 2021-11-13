@@ -25,6 +25,8 @@ class IntentionSubscriber(Node):
         self.instruction_msg = "Heyy, tell me what you want to do!"
         self.followup = False
         self.intention = ""
+        self.detected_loc = ""
+        self.possible_loc = []
 
         # Start intention detection
         self.subscription = self.create_subscription(
@@ -147,6 +149,8 @@ class IntentionSubscriber(Node):
 
                 if SubmitAction(agent=Human) in self.world.agent.all_actions:
                     self.win.execute_action(SubmitAction(agent=Human))
+                elif SubmitAction(agent=Robot) in self.world.agent.all_actions:
+                    self.win.execute_action(SubmitAction(agent=Robot))
                 else:
                     print("Error: Submition failed")
                     self.instruction_msg = "Error: Submition failed"
@@ -157,14 +161,30 @@ class IntentionSubscriber(Node):
 
                 if ContinueAction(agent=Human) in self.world.agent.all_actions:
                     self.win.execute_action(ContinueAction(agent=Human))
+                elif ContinueAction(agent=Robot) in self.world.agent.all_actions:
+                    self.win.execute_action(ContinueAction(agent=Robot))
                 else:
                     print("Error: Cancellation failed")
                     self.instruction_msg = "Error: Cancellation failed"
                     self.win.graphics.next_label.text = self.instruction_msg  
-
             self.followup = False
 
-
+        # possible location list is not empty
+        elif self.possible_loc:
+            if intention_dic["agree"]:
+                loc_2 = self.possible_loc[0]
+                self.execute_connection(self.detected_loc, loc_2)
+                self.detected_loc = ""
+                self.possible_loc.clear()
+                self.followup = False
+            elif intention_dic["disagree"]:
+                self.possible_loc.remove(self.possible_loc[0])
+                self.instruction_msg = "Do you want to connect {} and {}?".format(self.detected_loc, self.possible_loc[0])
+                self.win.graphics.next_label.text = self.instruction_msg
+            else:
+                print("Error: Invalid command. Please say yes or no!")
+                self.instruction_msg = "Error: Invalid command. Please say yes or no!"
+                self.win.graphics.next_label.text = self.instruction_msg  
 
     def keyword_detection(self,wordList):
         """Detect user's intention when speech recognition succeeds.
@@ -179,7 +199,7 @@ class IntentionSubscriber(Node):
         keywords_clearall = ['clear','delete','remove','clean','erase','empty','cancel','disconnect']
         keywords_submit = ['submit','done','end','finish','terminate','finished']
         keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine','sure','nevermind']
-        keywords_disagree = ['no','not',"don",'disagree','waste','wasting']
+        keywords_disagree = ['no','nope','not',"don",'disagree','waste','wasting']
         keywords_badwords = ['stupid']
 
         # set up the response object
@@ -213,37 +233,68 @@ class IntentionSubscriber(Node):
         """If user's intention is to connect, detect the keywords for locations in user's transcript
         Convert the location into node numbers and excute.
         """
-        keywords_location = ['montreux','neuchatel','basel','interlaken','bern','zurich','luzern','zermatt','st.gallen','davos']
+        keywords_location = ['montreux','neuchatel','basel','interlaken','bern','zurich','luzern', 'lucerne','zermatt','st.gallen','davos']
         wordList = set(wordList)
         loc_1 = ""
         loc_2 = ""
         for w in wordList:
             if w in keywords_location:
                 loc_1 = w
+                if w == "lucerne": loc_1 = "luzern"
                 print("1st Detect: "+ w)
                 wordList.remove(w)
                 break
         for w in wordList:
             if w in keywords_location:
                 loc_2 = w
+                if w == "lucerne": loc_1 = "luzern"
                 print("2nd Detect: "+ w)
                 wordList.remove(w)
                 break
         
-        if loc_1 == "" or loc_2 == "": 
+        # If both of the location are invalid, re-ask for the full input
+        if loc_1 == "" and loc_2 == "": 
             self.instruction_msg = "Invalid locations: {}".format(wordList)
             self.win.graphics.next_label.text = self.instruction_msg
-        else:
-            self.instruction_msg = "You connect Mount {} and Mount {}".format(loc_1, loc_2)
+        
+        # If one of the location are valid, ask for the other input
+        elif not loc_1 == "" and loc_2 == "": 
+            self.followup = True
+            self.detected_loc = loc_1
+            
+            # Get the action list with the names.
+            action_list = []
+            for action in sorted(self.world.agent.all_actions):
+                if hasattr(action, 'edge'):
+                    u, v = self.world.env.state.network.get_edge_name(action.edge)
+                    action = action.__class__(edge=(u, v), agent=action.agent)
+                    action_list.append(action)
+            # Filtering for actions from detected location.
+            for action in action_list:
+                if isinstance(action, SuggestPickAction) and action.edge[0] == loc_1.capitalize():
+                    self.possible_loc.append(action.edge[1])
+
+            print(self.possible_loc)
+            ##############################
+            # need to modify - add edge case - if no available action
+            ##############################
+            self.instruction_msg = "Do you want to connect {} and {}?".format(loc_1, self.possible_loc[0])
             self.win.graphics.next_label.text = self.instruction_msg
-            (u,v) = self.world.env.state.network.get_edge_ids((loc_1, loc_2)) 
+        
+        # Get both valid locations, excute the detection
+        else:
+            self.execute_connection(loc_1, loc_2)
+    
+    def execute_connection(self, u, v):
+            self.instruction_msg = "You connect Mount {} and Mount {}".format(u, v)
+            self.win.graphics.next_label.text = self.instruction_msg
+            (u,v) = self.world.env.state.network.get_edge_ids((u, v)) 
             print("location 1 number: {}".format(u))
             print("location 2 number: {}".format(v))
             if SuggestPickAction((u, v), agent=Human)  in self.world.agent.all_actions:
                 self.win.execute_action(SuggestPickAction((u, v), agent=Human))
             else:
                 self.win.execute_action(SuggestPickAction((u, v), agent=Robot))
-    
 
 def main(args=None):
     rclpy.init(args=args)
