@@ -27,6 +27,7 @@ class IntentionSubscriber(Node):
         self.intention = ""
         self.detected_loc = ""
         self.possible_loc = []
+        self.steps = 0
 
         # Start intention detection
         self.subscription = self.create_subscription(
@@ -68,9 +69,25 @@ class IntentionSubscriber(Node):
             if intention_dic["connect"]:
                 self.intention = "connect"
                 print("You want to connect")
-                self.connect_location(wordList)
-            
+                
+                # Filter the available actions
+                # Get the action list with the names.
+                action_list = []
+                for action in sorted(self.world.agent.all_actions):
+                    if hasattr(action, 'edge'):
+                        u, v = self.world.env.state.network.get_edge_name(action.edge)
+                        action = action.__class__(edge=(u, v), agent=action.agent)
+                        action_list.append(action)
+                 # Filtering for actions from detected location.
+                if any([isinstance(action, SuggestPickAction) for action in action_list]):
+                    self.connect_location(wordList)
+                else:
+                    self.instruction_msg = "You are not allowed to connect!"
+                    self.win.graphics.next_label.text = self.instruction_msg
+                    print(self.instruction_msg)
+
             elif intention_dic["clearall"]:
+                self.steps += 1
                 self.intention = "clear all"
                 self.instruction_msg = "Okay, we clear all"
                 self.win.graphics.next_label.text = self.instruction_msg
@@ -84,6 +101,7 @@ class IntentionSubscriber(Node):
                     # self.win.graphics.next_label.text = self.instruction_msg
 
             elif intention_dic["submit"]:
+                self.steps += 1
                 self.intention = "submit"
                 self.instruction_msg = "Are you sure that you want to submit?"
                 self.win.graphics.next_label.text = self.instruction_msg   
@@ -98,38 +116,50 @@ class IntentionSubscriber(Node):
                 self.followup = True
 
             elif intention_dic["agree"]:
+                self.steps += 1
                 self.intention = "agree"
-  
                 self.instruction_msg = "Thanks for agree.Tell me what you want to do now?"
                 self.win.graphics.next_label.text = self.instruction_msg     
 
                 if AgreeAction(agent=Human) in self.world.agent.all_actions:
                     self.win.execute_action(AgreeAction(agent=Human))
+                    print("You used {} steps to {}".format(self.steps, self.intention))
+                    self.steps = 0
                 else:
                     self.win.execute_action(AgreeAction(agent=Robot))
+                    print("You used {} steps to {}".format(self.steps, self.intention))
+                    self.steps = 0
                 
 
             elif intention_dic["disagree"]:
+                self.steps += 1
                 self.intention = "disagree"
-
                 self.instruction_msg = "You disagree. Then tell me what you want to do?"
                 self.win.graphics.next_label.text = self.instruction_msg
 
                 if DisagreeAction(agent=Human) in self.world.agent.all_actions:
                     self.win.execute_action(DisagreeAction(agent=Human))
+                    print("You used {} steps to {}".format(self.steps, self.intention))
+                    self.steps = 0
                 else:
                     self.win.execute_action(DisagreeAction(agent=Robot))
+                    print("You used {} steps to {}".format(self.steps, self.intention))
+                    self.steps = 0
             
             elif intention_dic["stupid"]:
+                self.steps += 1
                 self.intention = "disagree"
-
                 self.instruction_msg = "Thank you. You too ^^"
                 self.win.graphics.next_label.text = self.instruction_msg
 
                 if DisagreeAction(agent=Human) in self.world.agent.all_actions:
                     self.win.execute_action(DisagreeAction(agent=Human))
+                    print("You used {} steps to {}".format(self.steps, self.intention))
+                    self.steps = 0
                 else:
-                    self.win.execute_action(DisagreeAction(agent=Robot))                      
+                    self.win.execute_action(DisagreeAction(agent=Robot))  
+                    print("You used {} steps to {}".format(self.steps, self.intention))
+                    self.steps = 0                    
 
             else:
                 print("Error: intention detection failed.")
@@ -143,34 +173,50 @@ class IntentionSubscriber(Node):
         intention_dic = self.keyword_detection(wordList)
 
         if self.intention == "submit":
+
+            self.steps += 1
+
             if intention_dic["agree"]:
                 self.instruction_msg = "Okay we submit!"
                 self.win.graphics.next_label.text = self.instruction_msg     
-
+ 
                 if SubmitAction(agent=Human) in self.world.agent.all_actions:
                     self.win.execute_action(SubmitAction(agent=Human))
+                    print("You used {} steps to {}".format(self.steps, self.intention))
+                    self.steps = 0
                 elif SubmitAction(agent=Robot) in self.world.agent.all_actions:
                     self.win.execute_action(SubmitAction(agent=Robot))
+                    print("You used {} steps to {}".format(self.steps, self.intention))
+                    self.steps = 0
                 else:
                     print("Error: Submition failed")
                     self.instruction_msg = "Error: Submition failed"
-                    self.win.graphics.next_label.text = self.instruction_msg  
+                    self.win.graphics.next_label.text = self.instruction_msg 
+
             elif intention_dic["disagree"] or intention_dic['clearall']:
                 self.instruction_msg = "You canceled your submition!"
                 self.win.graphics.next_label.text = self.instruction_msg     
 
                 if ContinueAction(agent=Human) in self.world.agent.all_actions:
                     self.win.execute_action(ContinueAction(agent=Human))
+                    print("You used {} steps to {}".format(self.steps, self.intention))
+                    self.steps = 0
                 elif ContinueAction(agent=Robot) in self.world.agent.all_actions:
                     self.win.execute_action(ContinueAction(agent=Robot))
+                    print("You used {} steps to {}".format(self.steps, self.intention))
+                    self.steps = 0
                 else:
                     print("Error: Cancellation failed")
                     self.instruction_msg = "Error: Cancellation failed"
                     self.win.graphics.next_label.text = self.instruction_msg  
+            
             self.followup = False
 
         # possible location list is not empty
         elif self.possible_loc:
+
+            self.steps += 1
+
             if intention_dic["agree"]:
                 loc_2 = self.possible_loc[0]
                 self.execute_connection(self.detected_loc, loc_2)
@@ -274,12 +320,16 @@ class IntentionSubscriber(Node):
                 if isinstance(action, SuggestPickAction) and action.edge[0] == loc_1.capitalize():
                     self.possible_loc.append(action.edge[1])
 
-            print(self.possible_loc)
-            ##############################
-            # need to modify - add edge case - if no available action
-            ##############################
+            print("The possbile locations to connect from {} are {}".format(loc_1, self.possible_loc))
+
+            # if self.possible_loc:
             self.instruction_msg = "Do you want to connect {} and {}?".format(loc_1, self.possible_loc[0])
             self.win.graphics.next_label.text = self.instruction_msg
+            print(self.instruction_msg)
+            # else: 
+            #     self.instruction_msg = "You are not allowed to connect!"
+            #     self.win.graphics.next_label.text = self.instruction_msg
+            #     print(self.instruction_msg)
         
         # Get both valid locations, excute the detection
         else:
@@ -293,16 +343,18 @@ class IntentionSubscriber(Node):
             print("location 2 number: {}".format(v))
             if SuggestPickAction((u, v), agent=Human)  in self.world.agent.all_actions:
                 self.win.execute_action(SuggestPickAction((u, v), agent=Human))
+                print("You used {} steps to {}".format(self.steps, self.intention))
+                self.steps = 0
             else:
                 self.win.execute_action(SuggestPickAction((u, v), agent=Robot))
+                print("You used {} steps to {}".format(self.steps, self.intention))
+                self.steps = 0
 
 def main(args=None):
     rclpy.init(args=args)
     intention_subscriber = IntentionSubscriber()
     # rclpy.spin(intention_subscriber)
-
     # pyglet.app.run()
-    
     # Enter the main event loop.
     while True:
         pyglet.clock.tick()
@@ -314,7 +366,6 @@ def main(args=None):
             window.flip()
 
         rclpy.spin_once(intention_subscriber, timeout_sec=0.0)
-
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically

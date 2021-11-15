@@ -3,20 +3,24 @@ from rclpy.node import Node
 from std_msgs.msg import String
 
 import speech_recognition as sr
-# import time
+import time
 # import re
 
 
 class IntentionPublisher(Node):
 
     def __init__(self):
+        self.start_time = time.time()
+        print("At {0:.2f}: Now we start!".format(time.time()-self.start_time))
         super().__init__('intention_publisher')
-        print("Now we start!")
+        print("At {0:.2f}: Initializing...".format(time.time()-self.start_time))
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
+        print("At {0:.2f}: Initialization done!".format(time.time()-self.start_time))
 
         # keep doing speach recognition
         self.publisher_ = self.create_publisher(String, 'intention', 3)
+        print("At {0:.2f}: Publisher created!".format(time.time()-self.start_time))
         while(True):
            self.start_detection()
 
@@ -43,9 +47,9 @@ class IntentionPublisher(Node):
                 break
             if not command["success"]:
                 break
-            print("I didn't catch that. What did you say?\n")
+            print("At {0:.2f}: I didn't catch that. What did you say?\n".format(time.time()-self.start_time))
     
-        print("Recoginition done!")
+        print("At {0:.2f}: Recoginition done!".format(time.time()-self.start_time))
 
         # if there was an error, stop
         if command["error"]:
@@ -80,9 +84,12 @@ class IntentionPublisher(Node):
         # from the microphone
         with microphone as source:
             recognizer.adjust_for_ambient_noise(source)
-            audio = recognizer.listen(source)
+            print("At {0:.2f}: Start listening".format(time.time()-self.start_time))
+            audio = recognizer.listen(source, phrase_time_limit=10)
+            print("At {0:.2f}: Finish listening".format(time.time()-self.start_time))
+
     
-        print("Recognizing...Please wait...")
+        print("At {0:.2f}: Recognizing...Please wait...".format(time.time()-self.start_time))
 
         # set up the response object
         response = {
