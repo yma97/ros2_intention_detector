@@ -7,7 +7,7 @@ from rclpy.node import Node
 
 from std_msgs.msg import String
 from justhink_world import create_world, load_log, show_world, world
-from justhink_world.agent import Human, Robot
+from justhink_world.agent.agent import Agent
 from justhink_world.domain.action import SubmitAction, SuggestPickAction, ClearAction, \
 AttemptSubmitAction, ContinueAction, AttemptSubmitAction, AgreeAction, DisagreeAction
 from justhink_world.visual import WorldWindow
@@ -98,12 +98,12 @@ class IntentionSubscriber(Node):
                 self.instruction_msg = "Okay, we clear all"
                 self.win.graphics.next_label.text = self.instruction_msg
 
-                if ClearAction(agent=Human) in self.world.agent.all_actions:
-                    self.win.execute_action(ClearAction(agent=Human))
+                if ClearAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
+                    self.win.execute_action(ClearAction(agent=Agent.HUMAN))
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                     self.steps = 0
                 else:
-                    self.win.execute_action(ClearAction(agent=Robot))
+                    self.win.execute_action(ClearAction(agent=Agent.ROBOT))
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                     self.steps = 0
                     # print("You are a Robot. You can't clear all!")
@@ -117,10 +117,10 @@ class IntentionSubscriber(Node):
                 self.win.graphics.next_label.text = self.instruction_msg   
                 print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
 
-                if AttemptSubmitAction(agent=Human) in self.world.agent.all_actions:
-                    self.win.execute_action(AttemptSubmitAction(agent=Human))
+                if AttemptSubmitAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
+                    self.win.execute_action(AttemptSubmitAction(agent=Agent.HUMAN))
                 else:
-                    self.win.execute_action(AttemptSubmitAction(agent=Robot))
+                    self.win.execute_action(AttemptSubmitAction(agent=Agent.ROBOT))
                     # print("You are a Robot. You can't submit!")
                     # self.instruction_msg = "You are a Robot. You can't submit!"
                     # self.win.graphics.next_label.text = self.instruction_msg  
@@ -133,12 +133,12 @@ class IntentionSubscriber(Node):
                 self.win.graphics.next_label.text = self.instruction_msg   
                 print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
   
-                if AgreeAction(agent=Human) in self.world.agent.all_actions:
-                    self.win.execute_action(AgreeAction(agent=Human))
+                if AgreeAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
+                    self.win.execute_action(AgreeAction(agent=Agent.HUMAN))
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                     self.steps = 0
                 else:
-                    self.win.execute_action(AgreeAction(agent=Robot))
+                    self.win.execute_action(AgreeAction(agent=Agent.ROBOT))
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                     self.steps = 0
                 
@@ -150,12 +150,12 @@ class IntentionSubscriber(Node):
                 self.win.graphics.next_label.text = self.instruction_msg
                 print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
 
-                if DisagreeAction(agent=Human) in self.world.agent.all_actions:
-                    self.win.execute_action(DisagreeAction(agent=Human))
+                if DisagreeAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
+                    self.win.execute_action(DisagreeAction(agent=Agent.HUMAN))
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                     self.steps = 0
                 else:
-                    self.win.execute_action(DisagreeAction(agent=Robot))
+                    self.win.execute_action(DisagreeAction(agent=Agent.ROBOT))
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                     self.steps = 0
             
@@ -166,12 +166,12 @@ class IntentionSubscriber(Node):
                 self.win.graphics.next_label.text = self.instruction_msg
                 print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
 
-                if DisagreeAction(agent=Human) in self.world.agent.all_actions:
-                    self.win.execute_action(DisagreeAction(agent=Human))
+                if DisagreeAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
+                    self.win.execute_action(DisagreeAction(agent=Agent.HUMAN))
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                     self.steps = 0
                 else:
-                    self.win.execute_action(DisagreeAction(agent=Robot))  
+                    self.win.execute_action(DisagreeAction(agent=Agent.ROBOT))  
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                     self.steps = 0                    
 
@@ -194,12 +194,12 @@ class IntentionSubscriber(Node):
                 self.instruction_msg = "Okay we submit!"
                 self.win.graphics.next_label.text = self.instruction_msg     
  
-                if SubmitAction(agent=Human) in self.world.agent.all_actions:
-                    self.win.execute_action(SubmitAction(agent=Human))
+                if SubmitAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
+                    self.win.execute_action(SubmitAction(agent=Agent.HUMAN))
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                     self.steps = 0
-                elif SubmitAction(agent=Robot) in self.world.agent.all_actions:
-                    self.win.execute_action(SubmitAction(agent=Robot))
+                elif SubmitAction(agent=Agent.ROBOT) in self.world.agent.all_actions:
+                    self.win.execute_action(SubmitAction(agent=Agent.ROBOT))
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                     self.steps = 0
                 else:
@@ -211,12 +211,12 @@ class IntentionSubscriber(Node):
                 self.instruction_msg = "You canceled your submition!"
                 self.win.graphics.next_label.text = self.instruction_msg     
 
-                if ContinueAction(agent=Human) in self.world.agent.all_actions:
-                    self.win.execute_action(ContinueAction(agent=Human))
+                if ContinueAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
+                    self.win.execute_action(ContinueAction(agent=Agent.HUMAN))
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                     self.steps = 0
-                elif ContinueAction(agent=Robot) in self.world.agent.all_actions:
-                    self.win.execute_action(ContinueAction(agent=Robot))
+                elif ContinueAction(agent=Agent.ROBOT) in self.world.agent.all_actions:
+                    self.win.execute_action(ContinueAction(agent=Agent.ROBOT))
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                     self.steps = 0
                 else:
@@ -315,7 +315,7 @@ class IntentionSubscriber(Node):
         
         # If both of the location are invalid, re-ask for the full input
         if loc_1 == "" and loc_2 == "": 
-            self.instruction_msg = "Invalid locations: {}".format(wordList)
+            self.instruction_msg = "Invalid locations. Can you repeat?"
             self.win.graphics.next_label.text = self.instruction_msg
             print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
         
@@ -358,12 +358,12 @@ class IntentionSubscriber(Node):
             (u,v) = self.world.env.state.network.get_edge_ids((u, v)) 
             #print("At %.02f: location 1 number: %d" % ((time.time()-self.start_time), u))
             #print("At %.02f: location 2 number: %d" % ((time.time()-self.start_time), v))
-            if SuggestPickAction((u, v), agent=Human)  in self.world.agent.all_actions:
-                self.win.execute_action(SuggestPickAction((u, v), agent=Human))
+            if SuggestPickAction((u, v), agent=Agent.HUMAN)  in self.world.agent.all_actions:
+                self.win.execute_action(SuggestPickAction((u, v), agent=Agent.HUMAN))
                 print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                 self.steps = 0
             else:
-                self.win.execute_action(SuggestPickAction((u, v), agent=Robot))
+                self.win.execute_action(SuggestPickAction((u, v), agent=Agent.ROBOT))
                 print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
                 self.steps = 0
 
