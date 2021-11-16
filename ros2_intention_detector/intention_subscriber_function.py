@@ -299,14 +299,17 @@ class IntentionSubscriber(Node):
                 self.followup = False
             elif intention_dic["disagree"] or intention_dic["stupid"]:
                 self.possible_loc.remove(self.possible_loc[0])
-                self.instruction_msg = "Do you want to connect {} and {}?".format(self.detected_loc.capitalize(), self.possible_loc[0])
-                self.win.graphics.next_label.text = self.instruction_msg
-                print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
+                if self.possible_loc:
+                    self.instruction_msg = "Do you want to connect {} and {}?".format(self.detected_loc.capitalize(), self.possible_loc[0])
+                    self.win.graphics.next_label.text = self.instruction_msg
+                    print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
             else:
                 self.instruction_msg = "Error: Invalid command. Please say yes or no!"
                 self.win.graphics.next_label.text = self.instruction_msg  
                 print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
-
+        else:
+            self.followup = False
+    
     def keyword_detection(self,wordList):
         """Detect user's intention when speech recognition succeeds.
         Compare the words in the transcript with teh keywords set.
