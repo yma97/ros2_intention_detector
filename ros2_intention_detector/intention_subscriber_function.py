@@ -15,6 +15,7 @@ from justhink_world.visual import WorldWindow
 class IntentionSubscriber(Node):
 
     def __init__(self):
+        """Initialization"""
         self.start_time = time.time()
         # Call back to detect user's intention
         super().__init__('intention_subscriber')
@@ -30,6 +31,7 @@ class IntentionSubscriber(Node):
         self.detected_loc = ""
         self.possible_loc = []
         self.steps = 0
+        #self.followup_count = 0
 
         # Start intention detection
         self.subscription = self.create_subscription(
@@ -50,7 +52,8 @@ class IntentionSubscriber(Node):
         print("At %.02f: %s" % ((time.time()-self.start_time), self.instruction_msg))
 
 
-    def listener_callback(self, msg):  
+    def listener_callback(self, msg):
+        """Call back function receive user's transcript from intention detector"""  
         #self.get_logger().info('I heard: "%s"' % msg.data)
         print("At %.02f: [System] I heard '%s'" % ((time.time()-self.start_time), msg.data))
         #self.instruction_msg = 'I heard: "%s"' % msg.data
@@ -60,117 +63,127 @@ class IntentionSubscriber(Node):
         intention_dic = self.keyword_detection(wordList)
 
         if not msg.data == "error" and not self.followup:
+            #time_round_1 = time.time()
             self.action_detection(intention_dic, wordList, msg)
         
         elif not msg.data == "error" and self.followup:
+            #self.followup_count += 1
             self.followup_detection(intention_dic)
 
 
     def action_detection(self, intention_dic, wordList, msg):
+        """Be called when self.followup == False.
+        Check the five basic intentions for the first round.
+        Available intentions: [connect], [clearall], [submit], [agree], [disagree]
+        Execute the action in the world accordindly.
+        """
+        # intention_dic = self.keyword_detection(wordList)
+
+        if intention_dic["connect"]:
+            self.steps += 1
+            self.intention = "connect"
+            print("At {0:.2f}: You want to connect".format(time.time()-self.start_time))
             
-            # intention_dic = self.keyword_detection(wordList)
-
-            if intention_dic["connect"]:
-                self.steps += 1
-                self.intention = "connect"
-                print("At {0:.2f}: You want to connect".format(time.time()-self.start_time))
-                
-                # Filter the available actions
-                # Get the action list with the names.
-                action_list = []
-                for action in sorted(self.world.agent.all_actions):
-                    if hasattr(action, 'edge'):
-                        u, v = self.world.env.state.network.get_edge_name(action.edge)
-                        action = action.__class__(edge=(u, v), agent=action.agent)
-                        action_list.append(action)
-                 # Filtering for actions from detected location.
-                if any([isinstance(action, SuggestPickAction) for action in action_list]):
-                    self.connect_location(wordList)
-                else:
-                    self.instruction_msg = "You are not allowed to connect!"
-                    self.win.graphics.next_label.text = self.instruction_msg
-                    print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
-
-
-            elif intention_dic["clearall"]:
-                self.steps += 1
-                self.intention = "clear all"
-                self.instruction_msg = "Okay, we clear all"
-                self.win.graphics.next_label.text = self.instruction_msg
-
-                if ClearAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
-                    self.win.execute_action(ClearAction(agent=Agent.HUMAN))
-                    print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
-                    self.steps = 0
-                else:
-                    self.win.execute_action(ClearAction(agent=Agent.ROBOT))
-                    print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
-                    self.steps = 0
-                    # print("You are a Robot. You can't clear all!")
-                    # self.instruction_msg = "You are a Robot. You can't clear all!"
-                    # self.win.graphics.next_label.text = self.instruction_msg
-
-            elif intention_dic["submit"]:
-                self.steps += 1
-                self.intention = "submit"
-                self.instruction_msg = "Are you sure that you want to submit?"
-                self.win.graphics.next_label.text = self.instruction_msg   
-                print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
-
-                if AttemptSubmitAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
-                    self.win.execute_action(AttemptSubmitAction(agent=Agent.HUMAN))
-                else:
-                    self.win.execute_action(AttemptSubmitAction(agent=Agent.ROBOT))
-                    # print("You are a Robot. You can't submit!")
-                    # self.instruction_msg = "You are a Robot. You can't submit!"
-                    # self.win.graphics.next_label.text = self.instruction_msg  
-                self.followup = True
-
-            elif intention_dic["agree"]:
-                self.steps += 1
-                self.intention = "agree"
-                self.instruction_msg = "Thanks for agree.Tell me what you want to do now?"
-                self.win.graphics.next_label.text = self.instruction_msg   
-                print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
-  
-                if AgreeAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
-                    self.win.execute_action(AgreeAction(agent=Agent.HUMAN))
-                    print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
-                    self.steps = 0
-                else:
-                    self.win.execute_action(AgreeAction(agent=Agent.ROBOT))
-                    print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
-                    self.steps = 0
-                
-
-            elif intention_dic["disagree"] or intention_dic["stupid"]:
-                self.steps += 1
-                self.intention = "disagree"
-                if intention_dic["disagree"]:
-                    self.instruction_msg = "You disagree. Then tell me what you want to do?"
-                else:
-                    self.instruction_msg = "Thank you. You too ^^"
-                self.win.graphics.next_label.text = self.instruction_msg
-                print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
-
-                if DisagreeAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
-                    self.win.execute_action(DisagreeAction(agent=Agent.HUMAN))
-                    print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
-                    self.steps = 0
-                else:
-                    self.win.execute_action(DisagreeAction(agent=Agent.ROBOT))
-                    print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
-                    self.steps = 0                
-
+            # Filter the available actions
+            # Get the action list with the names.
+            action_list = []
+            for action in sorted(self.world.agent.all_actions):
+                if hasattr(action, 'edge'):
+                    u, v = self.world.env.state.network.get_edge_name(action.edge)
+                    action = action.__class__(edge=(u, v), agent=action.agent)
+                    action_list.append(action)
+                # Filtering for actions from detected location.
+            if any([isinstance(action, SuggestPickAction) for action in action_list]):
+                self.connect_location(wordList)
             else:
-                self.instruction_msg = "Error: intention detection failed: {}".format(msg)
+                self.instruction_msg = "You are not allowed to connect!"
                 self.win.graphics.next_label.text = self.instruction_msg
-                print("At %.02f: [System] %s" % ((time.time()-self.start_time), self.instruction_msg))
+                print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
+
+
+        elif intention_dic["clearall"]:
+            self.steps += 1
+            self.intention = "clear all"
+            self.instruction_msg = "Okay, we clear all"
+            self.win.graphics.next_label.text = self.instruction_msg
+
+            if ClearAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
+                self.win.execute_action(ClearAction(agent=Agent.HUMAN))
+                print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
+                self.steps = 0
+            else:
+                self.win.execute_action(ClearAction(agent=Agent.ROBOT))
+                print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
+                self.steps = 0
+                # print("You are a Robot. You can't clear all!")
+                # self.instruction_msg = "You are a Robot. You can't clear all!"
+                # self.win.graphics.next_label.text = self.instruction_msg
+
+        elif intention_dic["submit"]:
+            self.steps += 1
+            self.intention = "submit"
+            self.instruction_msg = "Are you sure that you want to submit?"
+            self.win.graphics.next_label.text = self.instruction_msg   
+            print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
+
+            if AttemptSubmitAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
+                self.win.execute_action(AttemptSubmitAction(agent=Agent.HUMAN))
+            else:
+                self.win.execute_action(AttemptSubmitAction(agent=Agent.ROBOT))
+                # print("You are a Robot. You can't submit!")
+                # self.instruction_msg = "You are a Robot. You can't submit!"
+                # self.win.graphics.next_label.text = self.instruction_msg  
+            self.followup = True
+
+        elif intention_dic["agree"]:
+            self.steps += 1
+            self.intention = "agree"
+            self.instruction_msg = "Thanks for agree.Tell me what you want to do now?"
+            self.win.graphics.next_label.text = self.instruction_msg   
+            print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
+
+            if AgreeAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
+                self.win.execute_action(AgreeAction(agent=Agent.HUMAN))
+                print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
+                self.steps = 0
+            else:
+                self.win.execute_action(AgreeAction(agent=Agent.ROBOT))
+                print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
+                self.steps = 0
+            
+
+        elif intention_dic["disagree"] or intention_dic["stupid"]:
+            self.steps += 1
+            self.intention = "disagree"
+            if intention_dic["disagree"]:
+                self.instruction_msg = "You disagree. Then tell me what you want to do?"
+            else:
+                self.instruction_msg = "Thank you. You too ^^"
+            self.win.graphics.next_label.text = self.instruction_msg
+            print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
+
+            if DisagreeAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
+                self.win.execute_action(DisagreeAction(agent=Agent.HUMAN))
+                print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
+                self.steps = 0
+            else:
+                self.win.execute_action(DisagreeAction(agent=Agent.ROBOT))
+                print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
+                self.steps = 0                
+
+        else:
+            self.instruction_msg = "Error: intention detection failed: {}".format(msg)
+            self.win.graphics.next_label.text = self.instruction_msg
+            print("At %.02f: [System] %s" % ((time.time()-self.start_time), self.instruction_msg))
 
      
     
     def followup_detection(self, intention_dic):
-        
+        """Be called when self.followup == True.
+        Intention is checked for the followup actions to confirm or reguide user to right direction.
+        Available intentions: [submit] - [agree/disagree]; [connect] - suggestion - [agree/disagree]
+        Execute the action in the world accordindly.
+        """
         # intention_dic = self.keyword_detection(wordList)
 
         if self.intention == "submit":
@@ -339,20 +352,21 @@ class IntentionSubscriber(Node):
             self.execute_connection(loc_1, loc_2)
     
     def execute_connection(self, u, v):
-            self.instruction_msg = "You connect Mount {} and Mount {}".format(u, v)
-            self.win.graphics.next_label.text = self.instruction_msg
-            print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
-            (u,v) = self.world.env.state.network.get_edge_ids((u, v)) 
-            #print("At %.02f: location 1 number: %d" % ((time.time()-self.start_time), u))
-            #print("At %.02f: location 2 number: %d" % ((time.time()-self.start_time), v))
-            if SuggestPickAction((u, v), agent=Agent.HUMAN)  in self.world.agent.all_actions:
-                self.win.execute_action(SuggestPickAction((u, v), agent=Agent.HUMAN))
-                print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
-                self.steps = 0
-            else:
-                self.win.execute_action(SuggestPickAction((u, v), agent=Agent.ROBOT))
-                print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
-                self.steps = 0
+        """Connect two locations in the world."""
+        self.instruction_msg = "You connect Mount {} and Mount {}".format(u, v)
+        self.win.graphics.next_label.text = self.instruction_msg
+        print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
+        (u,v) = self.world.env.state.network.get_edge_ids((u, v)) 
+        #print("At %.02f: location 1 number: %d" % ((time.time()-self.start_time), u))
+        #print("At %.02f: location 2 number: %d" % ((time.time()-self.start_time), v))
+        if SuggestPickAction((u, v), agent=Agent.HUMAN)  in self.world.agent.all_actions:
+            self.win.execute_action(SuggestPickAction((u, v), agent=Agent.HUMAN))
+            print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
+            self.steps = 0
+        else:
+            self.win.execute_action(SuggestPickAction((u, v), agent=Agent.ROBOT))
+            print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
+            self.steps = 0
 
 def main(args=None):
     rclpy.init(args=args)

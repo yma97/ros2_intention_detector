@@ -4,12 +4,12 @@ from std_msgs.msg import String
 
 import speech_recognition as sr
 import time
-# import re
 
 
 class IntentionPublisher(Node):
 
     def __init__(self):
+        """Initialization"""
         self.start_time = time.time()
         print("At {0:.2f}: Now we start!".format(time.time()-self.start_time))
         super().__init__('intention_publisher')
@@ -22,15 +22,11 @@ class IntentionPublisher(Node):
         self.publisher_ = self.create_publisher(String, 'intention', 3)
         print("At {0:.2f}: Publisher created!".format(time.time()-self.start_time))
         while(True):
-           self.start_detection()
+           msg = String()
+           msg.data = self.intention_detection()
+           self.publisher_.publish(msg)
+           #self.get_logger().info('User wants to: "%s"' % msg.data)
 
-    
-    def start_detection(self):
-        msg = String()
-        msg.data = self.intention_detection()
-        self.publisher_.publish(msg)
-        #self.get_logger().info('User wants to: "%s"' % msg.data)
-        return msg.data
 
         # intention detection
     def intention_detection(self):
