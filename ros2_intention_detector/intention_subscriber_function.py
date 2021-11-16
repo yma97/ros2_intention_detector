@@ -57,18 +57,18 @@ class IntentionSubscriber(Node):
         #self.win.graphics.next_label.text = self.instruction_msg
         
         wordList = re.sub("[^\w]"," ", msg.data).split()
-        #print(wordList)
+        intention_dic = self.keyword_detection(wordList)
 
         if not msg.data == "error" and not self.followup:
-            self.action_detection(wordList)
+            self.action_detection(intention_dic, wordList, msg)
         
         elif not msg.data == "error" and self.followup:
-            self.followup_detection(wordList)
+            self.followup_detection(intention_dic)
 
 
-    def action_detection(self, wordList):
+    def action_detection(self, intention_dic, wordList, msg):
             
-            intention_dic = self.keyword_detection(wordList)
+            # intention_dic = self.keyword_detection(wordList)
 
             if intention_dic["connect"]:
                 self.steps += 1
@@ -143,10 +143,13 @@ class IntentionSubscriber(Node):
                     self.steps = 0
                 
 
-            elif intention_dic["disagree"]:
+            elif intention_dic["disagree"] or intention_dic["stupid"]:
                 self.steps += 1
                 self.intention = "disagree"
-                self.instruction_msg = "You disagree. Then tell me what you want to do?"
+                if intention_dic["disagree"]:
+                    self.instruction_msg = "You disagree. Then tell me what you want to do?"
+                else:
+                    self.instruction_msg = "Thank you. You too ^^"
                 self.win.graphics.next_label.text = self.instruction_msg
                 print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
 
@@ -157,34 +160,18 @@ class IntentionSubscriber(Node):
                 else:
                     self.win.execute_action(DisagreeAction(agent=Agent.ROBOT))
                     print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
-                    self.steps = 0
-            
-            elif intention_dic["stupid"]:
-                self.steps += 1
-                self.intention = "disagree"
-                self.instruction_msg = "Thank you. You too ^^"
-                self.win.graphics.next_label.text = self.instruction_msg
-                print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
-
-                if DisagreeAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
-                    self.win.execute_action(DisagreeAction(agent=Agent.HUMAN))
-                    print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
-                    self.steps = 0
-                else:
-                    self.win.execute_action(DisagreeAction(agent=Agent.ROBOT))  
-                    print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
-                    self.steps = 0                    
+                    self.steps = 0                
 
             else:
-                self.instruction_msg = "Error: intention detection failed: {}".format(wordList)
+                self.instruction_msg = "Error: intention detection failed: {}".format(msg)
                 self.win.graphics.next_label.text = self.instruction_msg
                 print("At %.02f: [System] %s" % ((time.time()-self.start_time), self.instruction_msg))
 
      
     
-    def followup_detection(self, wordList):
+    def followup_detection(self, intention_dic):
         
-        intention_dic = self.keyword_detection(wordList)
+        # intention_dic = self.keyword_detection(wordList)
 
         if self.intention == "submit":
 
@@ -207,17 +194,17 @@ class IntentionSubscriber(Node):
                     self.win.graphics.next_label.text = self.instruction_msg 
                     print("At %.02f: [System] %s" % ((time.time()-self.start_time), self.instruction_msg))
 
-            elif intention_dic["disagree"] or intention_dic['clearall']:
+            elif intention_dic["disagree"] or intention_dic['clearall'] or intention_dic['stupid']:
                 self.instruction_msg = "You canceled your submition!"
                 self.win.graphics.next_label.text = self.instruction_msg     
 
                 if ContinueAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
                     self.win.execute_action(ContinueAction(agent=Agent.HUMAN))
-                    print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
+                    print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, "cancel your submition"))
                     self.steps = 0
                 elif ContinueAction(agent=Agent.ROBOT) in self.world.agent.all_actions:
                     self.win.execute_action(ContinueAction(agent=Agent.ROBOT))
-                    print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, self.intention))
+                    print("At %.02f: [Execution] You used %s steps to %s" % ((time.time()-self.start_time), self.steps, "cancel your submition"))
                     self.steps = 0
                 else:
                     self.instruction_msg = "Error: Cancellation failed"
@@ -237,7 +224,7 @@ class IntentionSubscriber(Node):
                 self.detected_loc = ""
                 self.possible_loc.clear()
                 self.followup = False
-            elif intention_dic["disagree"]:
+            elif intention_dic["disagree"] or intention_dic["stupid"]:
                 self.possible_loc.remove(self.possible_loc[0])
                 self.instruction_msg = "Do you want to connect {} and {}?".format(self.detected_loc.capitalize(), self.possible_loc[0])
                 self.win.graphics.next_label.text = self.instruction_msg
