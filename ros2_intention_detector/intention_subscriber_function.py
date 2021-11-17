@@ -65,7 +65,7 @@ class IntentionSubscriber(Node):
         intention_dic = self.keyword_detection(wordList)
 
         if not msg.data == "error" and not self.followup:
-            self.action_detection(intention_dic, wordList, msg)
+            self.action_detection(intention_dic, wordList, msg.data)
         
         elif not msg.data == "error" and self.followup:
             self.followup_count += 1
@@ -209,7 +209,7 @@ class IntentionSubscriber(Node):
                 self.time_round_1 = time.time()          
 
         else:
-            self.instruction_msg = "Error: intention detection failed: {}".format(msg)
+            self.instruction_msg = "Error: intention detection failed. I heard %s." % msg
             self.win.graphics.next_label.text = self.instruction_msg
             print("At %.02f: [System] %s" % ((time.time()-self.start_time), self.instruction_msg))
 
@@ -241,6 +241,7 @@ class IntentionSubscriber(Node):
                     self.steps = 0
                     self.followup_count = 0
                     self.time_round_1 = time.time()
+                    self.followup = False
                 elif SubmitAction(agent=Agent.ROBOT) in self.world.agent.all_actions:
                     self.win.execute_action(SubmitAction(agent=Agent.ROBOT))
                     current_time = time.time()- self.start_time
@@ -251,6 +252,7 @@ class IntentionSubscriber(Node):
                     self.steps = 0
                     self.followup_count = 0
                     self.time_round_1 = time.time()
+                    self.followup = False
                 else:
                     self.instruction_msg = "Error: Submition failed"
                     self.win.graphics.next_label.text = self.instruction_msg 
@@ -270,6 +272,7 @@ class IntentionSubscriber(Node):
                     self.steps = 0
                     self.followup_count = 0
                     self.time_round_1 = time.time()
+                    self.followup = False
                 elif ContinueAction(agent=Agent.ROBOT) in self.world.agent.all_actions:
                     self.win.execute_action(ContinueAction(agent=Agent.ROBOT))
                     current_time = time.time()- self.start_time
@@ -280,12 +283,12 @@ class IntentionSubscriber(Node):
                     self.steps = 0
                     self.followup_count = 0
                     self.time_round_1 = time.time()
+                    self.followup = False
                 else:
                     self.instruction_msg = "Error: Cancellation failed"
                     self.win.graphics.next_label.text = self.instruction_msg  
                     print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
-            
-            self.followup = False
+    
 
         # possible location list is not empty
         elif self.possible_loc:
@@ -309,6 +312,9 @@ class IntentionSubscriber(Node):
                 self.win.graphics.next_label.text = self.instruction_msg  
                 print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
         else:
+            self.instruction_msg = "Run out of attempts, please repeat your full suggestion!"
+            self.win.graphics.next_label.text = self.instruction_msg  
+            print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
             self.followup = False
     
     def keyword_detection(self,wordList):
@@ -323,7 +329,7 @@ class IntentionSubscriber(Node):
         keywords_connect = ['connect','kinect','go','from','build','bridge','add','another','walk','building','going','put','route','train','bridges']
         keywords_clearall = ['clear','delete','remove','clean','erase','empty','cancel','disconnect']
         keywords_submit = ['submit','done','end','finish','terminate','finished']
-        keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine','sure','nevermind','accept','except']
+        keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine','sure','nevermind','accept','acceptable','except','smart']
         keywords_disagree = ['no','nope','not',"don",'disagree','waste','wasting']
         keywords_badwords = ['stupid']
 
@@ -354,7 +360,7 @@ class IntentionSubscriber(Node):
         return intention_dic
 
 
-    def connect_location(self, wordList):
+    def connect_location(self, wordList, msg):
         """If user's intention is to connect, detect the keywords for locations in user's transcript
         Convert the location into node numbers and excute.
         """
@@ -369,17 +375,17 @@ class IntentionSubscriber(Node):
         for w in wordList:
             if w in keywords_location:
                 loc_1 = w
-                if w == "lucerne": 
+                if loc_1 == "lucerne": 
                     loc_1 = "luzern"
-                print("1st Detect: "+ w)
+                print("1st Detect: "+ loc_1)
                 wordList.remove(w)
                 break
         for w in wordList:
             if w in keywords_location:
                 loc_2 = w
-                if w == "lucerne": 
-                    loc_1 = "luzern"
-                print("2nd Detect: "+ w)
+                if loc_2 == "lucerne": 
+                    loc_2 = "luzern"
+                print("2nd Detect: "+ loc_2)
                 wordList.remove(w)
                 break
         
@@ -421,15 +427,15 @@ class IntentionSubscriber(Node):
         else:
             self.execute_connection(loc_1, loc_2)
     
-    def execute_connection(self, u, v):
+    def execute_connection(self, u_name, v_name):
         """Connect two locations in the world."""
-        self.instruction_msg = "You connect Mount {} and Mount {}".format(u, v)
-        self.win.graphics.next_label.text = self.instruction_msg
-        print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
-        (u,v) = self.world.env.state.network.get_edge_ids((u, v)) 
+        (u,v) = self.world.env.state.network.get_edge_ids((u_name, v_name)) 
         #print("At %.02f: location 1 number: %d" % ((time.time()-self.start_time), u))
         #print("At %.02f: location 2 number: %d" % ((time.time()-self.start_time), v))
-        if SuggestPickAction((u, v), agent=Agent.HUMAN)  in self.world.agent.all_actions:
+        if SuggestPickAction((u, v), agent=Agent.HUMAN) in self.world.agent.all_actions:
+            self.instruction_msg = "You connect Mount {} and Mount {}".format(u_name, v_name)
+            self.win.graphics.next_label.text = self.instruction_msg
+            print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
             self.win.execute_action(SuggestPickAction((u, v), agent=Agent.HUMAN))
             current_time = time.time()- self.start_time
             time_passed = time.time() - self.time_round_1
@@ -439,7 +445,10 @@ class IntentionSubscriber(Node):
             self.steps = 0
             self.followup_count = 0
             self.time_round_1 = time.time()
-        else:
+        elif SuggestPickAction((u, v), agent=Agent.ROBOT) in self.world.agent.all_actions:
+            self.instruction_msg = "You connect Mount {} and Mount {}".format(u_name, v_name)
+            self.win.graphics.next_label.text = self.instruction_msg
+            print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
             self.win.execute_action(SuggestPickAction((u, v), agent=Agent.ROBOT))
             current_time = time.time()- self.start_time
             time_passed = time.time() - self.time_round_1
@@ -449,6 +458,10 @@ class IntentionSubscriber(Node):
             self.steps = 0
             self.followup_count = 0
             self.time_round_1 = time.time()
+        else:
+            self.instruction_msg = "Come on! Invalid route. BE REALISTIC HAHA"
+            self.win.graphics.next_label.text = self.instruction_msg
+            print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
 
 def main(args=None):
     rclpy.init(args=args)
