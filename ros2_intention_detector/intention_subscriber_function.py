@@ -4,6 +4,7 @@ import pyglet
 import re
 import time
 from rclpy.node import Node
+from std_msgs import msg
 
 from std_msgs.msg import String
 from justhink_world import create_world, load_log, show_world, world
@@ -94,7 +95,7 @@ class IntentionSubscriber(Node):
                     action_list.append(action)
                 # Filtering for actions from detected location.
             if any([isinstance(action, SuggestPickAction) for action in action_list]):
-                self.connect_location(wordList)
+                self.connect_location(wordList, msg)
             else:
                 self.instruction_msg = "You are not allowed to connect!"
                 self.win.graphics.next_label.text = self.instruction_msg
@@ -322,7 +323,7 @@ class IntentionSubscriber(Node):
         keywords_connect = ['connect','kinect','go','from','build','bridge','add','another','walk','building','going','put','route','train','bridges']
         keywords_clearall = ['clear','delete','remove','clean','erase','empty','cancel','disconnect']
         keywords_submit = ['submit','done','end','finish','terminate','finished']
-        keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine','sure','nevermind']
+        keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine','sure','nevermind','accept','except']
         keywords_disagree = ['no','nope','not',"don",'disagree','waste','wasting']
         keywords_badwords = ['stupid']
 
@@ -361,24 +362,30 @@ class IntentionSubscriber(Node):
         wordList = set(wordList)
         loc_1 = ""
         loc_2 = ""
+        """
+        Problem here to solve
+        """
+        # TO DO:
         for w in wordList:
             if w in keywords_location:
                 loc_1 = w
-                if w == "lucerne": loc_1 = "luzern"
+                if w == "lucerne": 
+                    loc_1 = "luzern"
                 print("1st Detect: "+ w)
                 wordList.remove(w)
                 break
         for w in wordList:
             if w in keywords_location:
                 loc_2 = w
-                if w == "lucerne": loc_1 = "luzern"
+                if w == "lucerne": 
+                    loc_1 = "luzern"
                 print("2nd Detect: "+ w)
                 wordList.remove(w)
                 break
         
         # If both of the location are invalid, re-ask for the full input
         if loc_1 == "" and loc_2 == "": 
-            self.instruction_msg = "Invalid locations. Can you repeat?"
+            self.instruction_msg = "Invalid locations. Can you repeat? I heard: %s" % msg 
             self.win.graphics.next_label.text = self.instruction_msg
             print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
         
