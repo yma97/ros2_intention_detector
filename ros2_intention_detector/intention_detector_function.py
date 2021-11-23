@@ -1,3 +1,4 @@
+from logging import Logger
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -12,8 +13,8 @@ class IntentionPublisher(Node):
         """Initialization"""
         self.start_time = time.time()
         #print("At {0:.2f}: Now we start!".format(time.time()-self.start_time))
-        self.get_logger().info('Now we start')
         super().__init__('intention_publisher')
+        #self.get_logger().info('Now we start')
         #print("At {0:.2f}: Initializing...".format(time.time()-self.start_time))
         self.get_logger().info('Initializaing')
         self.recognizer = sr.Recognizer()
