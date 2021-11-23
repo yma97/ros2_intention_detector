@@ -11,16 +11,20 @@ class IntentionPublisher(Node):
     def __init__(self):
         """Initialization"""
         self.start_time = time.time()
-        print("At {0:.2f}: Now we start!".format(time.time()-self.start_time))
+        #print("At {0:.2f}: Now we start!".format(time.time()-self.start_time))
+        self.get_logger().info('Now we start')
         super().__init__('intention_publisher')
-        print("At {0:.2f}: Initializing...".format(time.time()-self.start_time))
+        #print("At {0:.2f}: Initializing...".format(time.time()-self.start_time))
+        self.get_logger().info('Initializaing')
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
-        print("At {0:.2f}: Initialization done!".format(time.time()-self.start_time))
+        #print("At {0:.2f}: Initialization done!".format(time.time()-self.start_time))
+        self.get_logger().info('Initialization done!')
 
         # keep doing speach recognition
         self.publisher_ = self.create_publisher(String, 'intention', 3)
-        print("At {0:.2f}: Publisher created!".format(time.time()-self.start_time))
+        #print("At {0:.2f}: Publisher created!".format(time.time()-self.start_time))
+        self.get_logger().info('Publisher created!')
         while(True):
            msg = String()
            msg.data = self.intention_detection()
@@ -43,17 +47,21 @@ class IntentionPublisher(Node):
                 break
             if not command["success"]:
                 break
-            print("At {0:.2f}: I didn't catch that. What did you say?\n".format(time.time()-self.start_time))
+            self.get_logger().info("I didn't catch that. What did you say?\n")
+            #print("At {0:.2f}: I didn't catch that. What did you say?\n".format(time.time()-self.start_time))
     
-        print("At {0:.2f}: Recoginition done!".format(time.time()-self.start_time))
+        #print("At {0:.2f}: Recoginition done!".format(time.time()-self.start_time))
+        self.get_logger().info("Recoginition done!")
 
         # if there was an error, stop
         if command["error"]:
-            print("ERROR: {}".format(command["error"]))
+            #print("ERROR: {}".format(command["error"]))
+            self.get_logger().info("ERROR: {}".format(command["error"]))
             return "error"
         else:
             # show the user's transcription and pass it to intention detector
-            print("You said: {}".format(command["transcription"]))
+            #print("You said: {}".format(command["transcription"]))
+            self.get_logger().info("You said: {}".format(command["transcription"]))
             return command["transcription"].lower()
 
 
@@ -80,16 +88,18 @@ class IntentionPublisher(Node):
         # from the microphone
         with microphone as source:
             recognizer.adjust_for_ambient_noise(source)
-            print("At {0:.2f}: Start listening".format(time.time()-self.start_time))
+            #print("At {0:.2f}: Start listening".format(time.time()-self.start_time))
+            self.get_logger().info("Start listening")
             time_before_listen = time.time()
             audio = recognizer.listen(source, phrase_time_limit=8)
             time_listened = time.time()-time_before_listen
-            print("At {0:.2f}: Finish listening".format(time.time()-self.start_time))
+            #print("At {0:.2f}: Finish listening".format(time.time()-self.start_time))
+            self.get_logger().info("Stop listening")
             if (time_listened >= 10):print("TIME OUT - listened more than 10 seconds")
 
     
-        print("At {0:.2f}: Recognizing...Please wait...".format(time.time()-self.start_time))
-
+        #print("At {0:.2f}: Recognizing...Please wait...".format(time.time()-self.start_time))
+        self.get_logger().info("Recognizing...Please wait...")
         # set up the response object
         response = {
             "success": True,
