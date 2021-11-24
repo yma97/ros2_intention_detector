@@ -88,9 +88,11 @@ class IntentionPublisher(Node):
             recognizer.adjust_for_ambient_noise(source)
             print("At {0:.2f}: Start listening".format(time.time()-self.start_time))
             time_before_listen = time.time()
+            # set led lights to be green indicating recording
             pixel_ring.mono(0x00FF00)
             audio = recognizer.listen(source, phrase_time_limit=8)
             time_listened = time.time()-time_before_listen
+            # set led lights to be red indicating recording ends
             pixel_ring.mono(0xFF0000)
             print("At {0:.2f}: Finish listening".format(time.time()-self.start_time))
             if (time_listened >= 10):print("TIME OUT - listened more than 10 seconds")
