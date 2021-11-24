@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from reachyAudio import reachyAudio
 
 import speech_recognition as sr
 import time
@@ -16,6 +17,9 @@ class IntentionPublisher(Node):
         print("At {0:.2f}: Initializing...".format(time.time()-self.start_time))
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
+        self.reachy_audio = reachyAudio.ReachyAudio()
+        #self.reachy_audio.pixel_ring.mono(self.reachy_audio.COLORS['RED'])
+        self.reachy_audio.pixel_ring.mono(0xFF0000)
         print("At {0:.2f}: Initialization done!".format(time.time()-self.start_time))
 
         # keep doing speach recognition
