@@ -206,7 +206,12 @@ class IntentionSubscriber(Node):
                 print("Time used to complete one action: %.02f" % time_passed)
                 self.steps = 0
                 self.followup_count = 0     
-                self.time_round_1 = time.time()          
+                self.time_round_1 = time.time()        
+
+        elif intention_dic["useless"]:
+            self.instruction_msg = 'You are welcome ^^ My pleasure'
+            self.win.graphics.next_label.text = self.instruction_msg
+            print("At %.02f: [System] %s" % ((time.time()-self.start_time), self.instruction_msg))
 
         else:
             self.instruction_msg = "Error: intention detection failed. I heard %s." % msg
@@ -333,6 +338,7 @@ class IntentionSubscriber(Node):
         keywords_disagree = ['no','nope','not',"don",'disagree','waste','wasting']
         keywords_location = ['montreux','neuchatel','basel','interlaken','bern','zurich','luzern', 'lucerne','zermatt','st.gallen','davos']
         keywords_badwords = ['stupid']
+        keywords_useless =  ['thank', 'thanks']
 
         # set up the response object
         intention_dic = {
@@ -341,7 +347,8 @@ class IntentionSubscriber(Node):
             "submit": False,
             "agree": False,
             "disagree": False,
-            "stupid": False
+            "stupid": False,
+            "useless": False
         }        
     
         # set the corresponding intention to true if detected
@@ -357,6 +364,8 @@ class IntentionSubscriber(Node):
             intention_dic["connect"] = True 
         elif any([keyw in wordList for keyw in keywords_badwords]):
             intention_dic["stupid"] = True
+        elif any([keyw in wordList for keyw in keywords_useless]):
+            intention_dic["useless"] = True    
 
         return intention_dic
 
