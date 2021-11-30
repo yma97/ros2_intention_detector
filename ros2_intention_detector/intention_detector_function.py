@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from pixel_ring import pixel_ring
 
 import speech_recognition as sr
 import time
@@ -18,6 +19,10 @@ class IntentionPublisher(Node):
         self.microphone = sr.Microphone()
         print("At {0:.2f}: Initialization done!".format(time.time()-self.start_time))
 
+
+        self.subscription = self.create_subscription(String, 'change_role', self.listener_callback, 10)
+        self.role = 0
+
         # keep doing speach recognition
         self.publisher_ = self.create_publisher(String, 'intention', 3)
         print("At {0:.2f}: Publisher created!".format(time.time()-self.start_time))
@@ -26,6 +31,15 @@ class IntentionPublisher(Node):
            msg.data = self.intention_detection()
            self.publisher_.publish(msg)
            #self.get_logger().info('User wants to: "%s"' % msg.data)
+
+    def listener_callback(self, msg):
+        """Call back function receive user's transcript from intention detector"""  
+        #self.get_logger().info('I heard: "%s"' % msg.data)
+        if self.role == 0:
+            self.role = 1
+        else:
+            self.role = 0
+        print("At %.02f: [System] Role changed; current player: '%s'" % ((time.time()-self.start_time), msg.data))
 
 
         # intention detection
@@ -82,8 +96,13 @@ class IntentionPublisher(Node):
             recognizer.adjust_for_ambient_noise(source)
             print("At {0:.2f}: Start listening".format(time.time()-self.start_time))
             time_before_listen = time.time()
+            if self.role == 0:
+                pixel_ring.mono(0x0000FF)
+            else: 
+                pixel_ring.mono(0xFFFF00)
             audio = recognizer.listen(source, phrase_time_limit=8)
             time_listened = time.time()-time_before_listen
+            pixel_ring.mono(0xFF0000)
             print("At {0:.2f}: Finish listening".format(time.time()-self.start_time))
             if (time_listened >= 10):print("TIME OUT - listened more than 10 seconds")
 

@@ -44,6 +44,11 @@ class IntentionSubscriber(Node):
         print("At {0:.2f}: [System] Start recognition".format(time.time()-self.start_time))
         self.subscription  # prevent unused variable warning
         print("At {0:.2f}: [System] Recognition finish".format(time.time()-self.start_time))
+
+        # keep check if the role has changed
+        self.publisher_ = self.create_publisher(String, 'change_role', 3)
+        print("At {0:.2f}: Publisher created!".format(time.time()-self.start_time))
+        self.change_role("Human")
         
         # Override the updater for next label.
         def _update_next_label():
@@ -52,6 +57,12 @@ class IntentionSubscriber(Node):
         # Change the text e.g. in a callback.
         self.win.graphics.next_label.text = self.instruction_msg
         print("At %.02f: %s" % ((time.time()-self.start_time), self.instruction_msg))
+
+
+    def change_role(self, cur_agent):
+        msg_send = String()
+        msg_send.data = cur_agent
+        self.publisher_.publish(msg_send)
 
 
     def listener_callback(self, msg):
@@ -260,6 +271,7 @@ class IntentionSubscriber(Node):
         keywords_submit = ['submit','done','end','finish','terminate','finished']
         keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine','sure','nevermind','accept','acceptable','except','smart','accepted','correct']
         keywords_disagree = ['no','nope','not',"don",'disagree','waste','wasting']
+        keywords_location = ['montreux','neuchatel','basel','interlaken','bern','zurich','luzern', 'lucerne','zermatt','st.gallen','davos']
         keywords_badwords = ['stupid']
 
         # set up the response object
@@ -281,7 +293,7 @@ class IntentionSubscriber(Node):
             intention_dic["disagree"] = True
         elif any([keyw in wordList for keyw in keywords_agree]):
             intention_dic["agree"] = True
-        elif any([keyw in wordList for keyw in keywords_connect]):
+        elif any([keyw in wordList for keyw in keywords_connect]) or any([keyw in wordList for keyw in keywords_location]):
             intention_dic["connect"] = True 
         elif any([keyw in wordList for keyw in keywords_badwords]):
             intention_dic["stupid"] = True
@@ -362,12 +374,14 @@ class IntentionSubscriber(Node):
             self.win.graphics.next_label.text = self.instruction_msg
             print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
             self.win.execute_action(SuggestPickAction((u, v), agent=Agent.HUMAN))
+            self.change_role("Robot")
             self.after_execution()
         elif SuggestPickAction((u, v), agent=Agent.ROBOT) in self.world.agent.all_actions:
             self.instruction_msg = "You connect Mount {} and Mount {}".format(u_name, v_name)
             self.win.graphics.next_label.text = self.instruction_msg
             print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
             self.win.execute_action(SuggestPickAction((u, v), agent=Agent.ROBOT))
+            self.change_role("Human")
             self.after_execution()
         else:
             self.instruction_msg = "Come on! Invalid route. BE REALISTIC HAHA"
