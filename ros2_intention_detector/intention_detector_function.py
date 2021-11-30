@@ -9,6 +9,7 @@ import time
 class IntentionPublisher(Node):
 
     def __init__(self):
+
         """Initialization"""
         self.start_time = time.time()
         print("At {0:.2f}: Now we start!".format(time.time()-self.start_time))
@@ -16,6 +17,10 @@ class IntentionPublisher(Node):
         print("At {0:.2f}: Initializing...".format(time.time()-self.start_time))
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
+
+
+        #self.reachy_audio = reachyAudio.ReachyAudio()
+        #self.reachy_audio.pixel_ring.mono(self.reachy_audio.COLORS['CYAN'])
         print("At {0:.2f}: Initialization done!".format(time.time()-self.start_time))
 
         # keep doing speach recognition
@@ -82,8 +87,10 @@ class IntentionPublisher(Node):
             recognizer.adjust_for_ambient_noise(source)
             print("At {0:.2f}: Start listening".format(time.time()-self.start_time))
             time_before_listen = time.time()
+            # set led lights to be green indicating recording
             audio = recognizer.listen(source, phrase_time_limit=8)
             time_listened = time.time()-time_before_listen
+            # set led lights to be red indicating recording ends
             print("At {0:.2f}: Finish listening".format(time.time()-self.start_time))
             if (time_listened >= 10):print("TIME OUT - listened more than 10 seconds")
 
