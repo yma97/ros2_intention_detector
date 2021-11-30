@@ -110,24 +110,10 @@ class IntentionSubscriber(Node):
 
             if ClearAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
                 self.win.execute_action(ClearAction(agent=Agent.HUMAN))
-                current_time = time.time()- self.start_time
-                time_passed = time.time() - self.time_round_1
-                print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
-                print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
-                print("Time used to complete one action: %.02f" % time_passed)
-                self.steps = 0
-                self.followup_count = 0
-                self.time_round_1 = time.time()
+                self.after_execution()
             else:
                 self.win.execute_action(ClearAction(agent=Agent.ROBOT))
-                current_time = time.time()- self.start_time
-                time_passed = time.time() - self.time_round_1
-                print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
-                print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
-                print("Time used to complete one action: %.02f" % time_passed)
-                self.steps = 0
-                self.followup_count = 0
-                self.time_round_1 = time.time()
+                self.after_execution()
                 # print("You are a Robot. You can't clear all!")
                 # self.instruction_msg = "You are a Robot. You can't clear all!"
                 # self.win.graphics.next_label.text = self.instruction_msg
@@ -157,24 +143,10 @@ class IntentionSubscriber(Node):
 
             if AgreeAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
                 self.win.execute_action(AgreeAction(agent=Agent.HUMAN))
-                current_time = time.time()- self.start_time
-                time_passed = time.time() - self.time_round_1
-                print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
-                print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
-                print("Time used to complete one action: %.02f" % time_passed)
-                self.steps = 0
-                self.followup_count = 0
-                self.time_round_1 = time.time()
+                self.after_execution()
             else:
                 self.win.execute_action(AgreeAction(agent=Agent.ROBOT))
-                current_time = time.time()- self.start_time
-                time_passed = time.time() - self.time_round_1
-                print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
-                print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
-                print("Time used to complete one action: %.02f" % time_passed)
-                self.steps = 0
-                self.followup_count = 0
-                self.time_round_1 = time.time()
+                self.after_execution()
             
 
         elif intention_dic["disagree"] or intention_dic["stupid"]:
@@ -189,24 +161,10 @@ class IntentionSubscriber(Node):
 
             if DisagreeAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
                 self.win.execute_action(DisagreeAction(agent=Agent.HUMAN))
-                current_time = time.time()- self.start_time
-                time_passed = time.time() - self.time_round_1
-                print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
-                print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
-                print("Time used to complete one action: %.02f" % time_passed)
-                self.steps = 0
-                self.followup_count = 0
-                self.time_round_1 = time.time()
+                self.after_execution()
             else:
                 self.win.execute_action(DisagreeAction(agent=Agent.ROBOT))
-                current_time = time.time()- self.start_time
-                time_passed = time.time() - self.time_round_1
-                print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
-                print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
-                print("Time used to complete one action: %.02f" % time_passed)
-                self.steps = 0
-                self.followup_count = 0     
-                self.time_round_1 = time.time()        
+                self.after_execution()     
 
         elif intention_dic["useless"]:
             self.instruction_msg = 'You are welcome ^^ My pleasure'
@@ -238,25 +196,11 @@ class IntentionSubscriber(Node):
  
                 if SubmitAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
                     self.win.execute_action(SubmitAction(agent=Agent.HUMAN))
-                    current_time = time.time()- self.start_time
-                    time_passed = time.time() - self.time_round_1
-                    print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
-                    print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
-                    print("Time used to complete one action: %.02f" % time_passed)
-                    self.steps = 0
-                    self.followup_count = 0
-                    self.time_round_1 = time.time()
+                    self.after_execution()
                     self.followup = False
                 elif SubmitAction(agent=Agent.ROBOT) in self.world.agent.all_actions:
                     self.win.execute_action(SubmitAction(agent=Agent.ROBOT))
-                    current_time = time.time()- self.start_time
-                    time_passed = time.time() - self.time_round_1
-                    print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
-                    print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
-                    print("Time used to complete one action: %.02f" % time_passed)
-                    self.steps = 0
-                    self.followup_count = 0
-                    self.time_round_1 = time.time()
+                    self.after_execution()
                     self.followup = False
                 else:
                     self.instruction_msg = "Error: Submition failed"
@@ -269,25 +213,11 @@ class IntentionSubscriber(Node):
 
                 if ContinueAction(agent=Agent.HUMAN) in self.world.agent.all_actions:
                     self.win.execute_action(ContinueAction(agent=Agent.HUMAN))
-                    current_time = time.time()- self.start_time
-                    time_passed = time.time() - self.time_round_1
-                    print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
-                    print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
-                    print("Time used to complete one action: %.02f" % time_passed)
-                    self.steps = 0
-                    self.followup_count = 0
-                    self.time_round_1 = time.time()
+                    self.after_execution()
                     self.followup = False
                 elif ContinueAction(agent=Agent.ROBOT) in self.world.agent.all_actions:
                     self.win.execute_action(ContinueAction(agent=Agent.ROBOT))
-                    current_time = time.time()- self.start_time
-                    time_passed = time.time() - self.time_round_1
-                    print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
-                    print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
-                    print("Time used to complete one action: %.02f" % time_passed)
-                    self.steps = 0
-                    self.followup_count = 0
-                    self.time_round_1 = time.time()
+                    self.after_execution()
                     self.followup = False
                 else:
                     self.instruction_msg = "Error: Cancellation failed"
@@ -447,31 +377,27 @@ class IntentionSubscriber(Node):
             self.win.graphics.next_label.text = self.instruction_msg
             print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
             self.win.execute_action(SuggestPickAction((u, v), agent=Agent.HUMAN))
-            current_time = time.time()- self.start_time
-            time_passed = time.time() - self.time_round_1
-            print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
-            print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
-            print("Time used to complete one action: %.02f" % time_passed)
-            self.steps = 0
-            self.followup_count = 0
-            self.time_round_1 = time.time()
+            self.after_execution()
         elif SuggestPickAction((u, v), agent=Agent.ROBOT) in self.world.agent.all_actions:
             self.instruction_msg = "You connect Mount {} and Mount {}".format(u_name, v_name)
             self.win.graphics.next_label.text = self.instruction_msg
             print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
             self.win.execute_action(SuggestPickAction((u, v), agent=Agent.ROBOT))
-            current_time = time.time()- self.start_time
-            time_passed = time.time() - self.time_round_1
-            print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
-            print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
-            print("Time used to complete one action: %.02f" % time_passed)
-            self.steps = 0
-            self.followup_count = 0
-            self.time_round_1 = time.time()
+            self.after_execution()
         else:
             self.instruction_msg = "Come on! Invalid route. BE REALISTIC HAHA"
             self.win.graphics.next_label.text = self.instruction_msg
             print("At %.02f: [Instruction] %s" % ((time.time()-self.start_time), self.instruction_msg))
+
+    def after_execution(self):
+        current_time = time.time()- self.start_time
+        time_passed = time.time() - self.time_round_1
+        print("At %.02f: [Execution] You used %s steps to %s" % (current_time, self.steps, self.intention))
+        print("At %.02f: [Execution] You used %s followup instructions to %s" % (current_time, self.followup_count, self.intention))
+        print("Time used to complete one action: %.02f" % time_passed)
+        self.steps = 0
+        self.followup_count = 0
+        self.time_round_1 = time.time()
 
 def main(args=None):
     rclpy.init(args=args)
