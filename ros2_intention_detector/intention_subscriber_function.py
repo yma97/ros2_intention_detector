@@ -329,7 +329,7 @@ class IntentionSubscriber(Node):
         keywords_connect = ['connect','kinect','go','from','build','bridge','add','another','walk','building','going','put','route','train','bridges']
         keywords_clearall = ['clear','delete','remove','clean','erase','empty','cancel','disconnect']
         keywords_submit = ['submit','done','end','finish','terminate','finished']
-        keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine','sure','nevermind','accept','acceptable','except','smart']
+        keywords_agree = ['yes','yea','okay','agree','ya','like','do','good','great','okay','ok','fine','sure','nevermind','accept','acceptable','except','smart', 'correct']
         keywords_disagree = ['no','nope','not',"don",'disagree','waste','wasting']
         keywords_badwords = ['stupid']
 
