@@ -48,7 +48,6 @@ class IntentionSubscriber(Node):
         # keep check if the role has changed
         self.publisher_ = self.create_publisher(String, 'change_role', 3)
         print("At {0:.2f}: Publisher created!".format(time.time()-self.start_time))
-        self.change_role("Human")
         
         # Override the updater for next label.
         def _update_next_label():
@@ -65,20 +64,18 @@ class IntentionSubscriber(Node):
         self.publisher_.publish(msg_send)
 
 
-    def listener_callback(self, msg):
+    def listener_callback(self, msg_received):
         """Call back function receive user's transcript from intention detector"""  
         #self.get_logger().info('I heard: "%s"' % msg.data)
-        print("At %.02f: [System] I heard '%s'" % ((time.time()-self.start_time), msg.data))
-        #self.instruction_msg = 'I heard: "%s"' % msg.data
-        #self.win.graphics.next_label.text = self.instruction_msg
+        print("At %.02f: [System] I heard '%s'" % ((time.time()-self.start_time), msg_received.data))
         
-        wordList = re.sub("[^\w]"," ", msg.data).split()
+        wordList = re.sub("[^\w]"," ", msg_received.data).split()
         intention_dic = self.keyword_detection(wordList)
 
-        if not msg.data == "error" and not self.followup:
-            self.action_detection(intention_dic, wordList, msg.data)
+        if not msg_received.data == "error" and not self.followup:
+            self.action_detection(intention_dic, wordList, msg_received.data)
         
-        elif not msg.data == "error" and self.followup:
+        elif not msg_received.data == "error" and self.followup:
             self.followup_count += 1
             self.followup_detection(intention_dic)
 

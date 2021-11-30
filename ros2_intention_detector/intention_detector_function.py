@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from pixel_ring import pixel_ring
+from std_msgs import msg
 
 import speech_recognition as sr
 import time
@@ -26,25 +27,27 @@ class IntentionPublisher(Node):
 
 
         self.subscription = self.create_subscription(String, 'change_role', self.listener_callback, 10)
-        self.role = 0
+        print("Start receving role msg")
+        self.role = "Robot"
 
         # keep doing speach recognition
         self.publisher_ = self.create_publisher(String, 'intention', 3)
         print("At {0:.2f}: Publisher created!".format(time.time()-self.start_time))
         while(True):
-           msg = String()
-           msg.data = self.intention_detection()
-           self.publisher_.publish(msg)
+           self.subscription
+           msg_send = String()
+           msg_send.data = self.intention_detection()
+           self.publisher_.publish(msg_send)
            #self.get_logger().info('User wants to: "%s"' % msg.data)
 
-    def listener_callback(self, msg):
+    def listener_callback(self, msg_received):
         """Call back function receive user's transcript from intention detector"""  
         #self.get_logger().info('I heard: "%s"' % msg.data)
-        if self.role == 0:
-            self.role = 1
+        if msg_received.data == "Human":
+            self.role = "Human"
         else:
-            self.role = 0
-        print("At %.02f: [System] Role changed; current player: '%s'" % ((time.time()-self.start_time), msg.data))
+            self.role = "Robot"
+        print("At %.02f: [System] Role changed; current player: '%s'" % ((time.time()-self.start_time), msg_received.data))
 
 
         # intention detection
@@ -101,20 +104,13 @@ class IntentionPublisher(Node):
             recognizer.adjust_for_ambient_noise(source)
             print("At {0:.2f}: Start listening".format(time.time()-self.start_time))
             time_before_listen = time.time()
-<<<<<<< HEAD
-            if self.role == 0:
+            if self.role == "Human":
                 pixel_ring.mono(0x0000FF)
             else: 
                 pixel_ring.mono(0xFFFF00)
             audio = recognizer.listen(source, phrase_time_limit=8)
             time_listened = time.time()-time_before_listen
             pixel_ring.mono(0xFF0000)
-=======
-            # set led lights to be green indicating recording
-            audio = recognizer.listen(source, phrase_time_limit=8)
-            time_listened = time.time()-time_before_listen
-            # set led lights to be red indicating recording ends
->>>>>>> 6260db830d8191824460925bcecf95016164a5db
             print("At {0:.2f}: Finish listening".format(time.time()-self.start_time))
             if (time_listened >= 10):print("TIME OUT - listened more than 10 seconds")
 
