@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from playsound import playsound
 
 import speech_recognition as sr
 import time
@@ -17,7 +18,6 @@ class IntentionPublisher(Node):
         print("At {0:.2f}: Initializing...".format(time.time()-self.start_time))
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
-
 
         #self.reachy_audio = reachyAudio.ReachyAudio()
         #self.reachy_audio.pixel_ring.mono(self.reachy_audio.COLORS['CYAN'])
@@ -87,12 +87,15 @@ class IntentionPublisher(Node):
             recognizer.adjust_for_ambient_noise(source)
             print("At {0:.2f}: Start listening".format(time.time()-self.start_time))
             time_before_listen = time.time()
-            # set led lights to be green indicating recording
+            # play start sound indicating recording
+            playsound("start.wav")
+            #print('playing sound using  playsound')
             audio = recognizer.listen(source, phrase_time_limit=8)
             time_listened = time.time()-time_before_listen
             # set led lights to be red indicating recording ends
+            playsound("finish.wav")
             print("At {0:.2f}: Finish listening".format(time.time()-self.start_time))
-            if (time_listened >= 10):print("TIME OUT - listened more than 10 seconds")
+            if (time_listened >= 8):print("TIME OUT - listened more than 8 seconds")
 
     
         print("At {0:.2f}: Recognizing...Please wait...".format(time.time()-self.start_time))
