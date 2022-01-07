@@ -20,8 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-             'detector = ros2_intention_detector.intention_detector_function:main',
-             'listener = ros2_intention_detector.intention_subscriber_function:main',
+             'detector = ros2_intention_detector.speech_recogniser:main',
+             'listener = ros2_intention_detector.intention_interpreter:main',
         ],
     },
 )

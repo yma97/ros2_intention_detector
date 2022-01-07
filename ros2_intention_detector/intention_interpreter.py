@@ -19,7 +19,7 @@ class IntentionSubscriber(Node):
         """Initialization"""
         self.start_time = time.time()
         # Call back to detect user's intention
-        super().__init__('intention_subscriber')
+        super().__init__('intention_interpreter')
 
         # Create a world & initialization global values
         self.world = create_world('collaboration-1')

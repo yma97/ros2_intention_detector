@@ -14,7 +14,7 @@ class IntentionPublisher(Node):
         """Initialization"""
         self.start_time = time.time()
         print("At {0:.2f}: Now we start!".format(time.time()-self.start_time))
-        super().__init__('intention_publisher')
+        super().__init__('speech_recogniser')
         print("At {0:.2f}: Initializing...".format(time.time()-self.start_time))
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
