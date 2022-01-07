@@ -19,8 +19,20 @@ git clone https://github.com/yma97/ros2_intention_detector.git
 cd ros2_foxy/src/
 . ../ros2-linux/setup.bash
 . install/setup.bash
+```
+#### Install dependencies and build the package:
+```
+rosdep install --from-paths src --ignore-src --rosdistro foxy -y -r
 colcon build --packages-select ros2_intention_detector
+```
+#### Run the node:
+```
 ros2 run ros2_intention_detector detector
 ros2 run ros2_intention_detector listener
 ros2 topic pub /intention std_msgs/String "data: Connect"
+```
+#### If there is error related to usb access permission when using LED lights on Reachy:
+```
+sudo udevadm control --reload
+sudo udevadm trigger
 ```
