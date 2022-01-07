@@ -1,5 +1,5 @@
 # “Help a humanoid robot understand my verbalised intentions!”
-### ros2_intention_detector - EPFL CHILI Lab - JUST_THINK Optional Semester Project 
+### ros2_intention_detector - EPFL CHILI Lab - [JUST_THINK](https://www.epfl.ch/labs/chili/index-html/research/animatas/justhink/) Optional Semester Project 
 
 #### Motivation: 
 The aim of this project is to endow a humanoid robot Reachy with the ability to understand the verbalized intentions of the human, in order to enhance the interactions.
